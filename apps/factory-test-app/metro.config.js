@@ -15,6 +15,15 @@ const config = getDefaultConfig(projectRoot);
 // Watch folders for local packages
 config.watchFolders = [monorepoRoot];
 
+// Node module resolution for monorepo
+config.resolver = {
+  ...config.resolver,
+  nodeModulesPaths: [
+    path.resolve(projectRoot, 'node_modules'),
+    path.resolve(monorepoRoot, 'node_modules'),
+  ],
+};
+
 // Add duplicate detection plugin
 config.serializer = {
   ...config.serializer,
