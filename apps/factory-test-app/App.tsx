@@ -1,19 +1,136 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View, ScrollView } from 'react-native';
-import { StoreInitializer, useIsDarkMode } from '@factory/app-shell';
-import { Lifecycle, Stores } from './features/app-shell';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { DefaultTheme, DarkTheme } from '@react-navigation/native';
+import { StoreInitializer, useIsDarkMode, NavigationContainer } from '@factory/app-shell';
+import { Lifecycle, Stores, Navigation } from './features/app-shell';
 import { EventLog } from './components';
+import { ProfileScreen, SettingsScreen, DetailsScreen } from './screens';
+
+export type RootStackParamList = {
+  Home: undefined;
+  Profile: { userId: string };
+  Settings: { tab?: string };
+  Details: { id: string };
+};
+
+const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export default function App() {
+  const [deepLinkEvents, setDeepLinkEvents] = useState<string[]>([]);
+
+  const handleDeepLink = (url: string, path: string) => {
+    console.log('[Deep Link] Opened:', url);
+    setDeepLinkEvents(prev => [...prev, `${url} (path: ${path})`]);
+  };
+
   return (
     <StoreInitializer>
-      <AppContent />
+      <AppNavigator deepLinkEvents={deepLinkEvents} handleDeepLink={handleDeepLink} />
     </StoreInitializer>
   );
 }
 
-function AppContent() {
+function AppNavigator({ deepLinkEvents, handleDeepLink }: { 
+  deepLinkEvents: string[]; 
+  handleDeepLink: (url: string, path: string) => void;
+}) {
+  const isDarkMode = useIsDarkMode();
+
+  const theme = useMemo(() => ({
+    ...(isDarkMode ? DarkTheme : DefaultTheme),
+    colors: {
+      ...(isDarkMode ? DarkTheme.colors : DefaultTheme.colors),
+      background: isDarkMode ? '#1a1a1a' : '#f5f5f5',
+    },
+  }), [isDarkMode]);
+
+  return (
+    <NavigationContainer
+      theme={theme}
+      config={{
+          linking: {
+            prefixes: ['factorytest://', 'https://factory-test.app'],
+            screens: {
+              Home: '',
+              Profile: 'profile/:userId',
+              Settings: 'settings',
+              Details: 'details/:id',
+            },
+          },
+        onDeepLink: handleDeepLink,
+      }}
+      onReady={() => console.log('[Navigation] Ready')}
+    >
+      <Stack.Navigator
+        initialRouteName="Home"
+        screenOptions={{
+          headerShown: false,
+          animation: 'simple_push',
+          contentStyle: {
+            backgroundColor: isDarkMode ? '#1a1a1a' : '#f5f5f5',
+          },
+        }}
+      >
+        <Stack.Screen name="Home">
+          {() => <HomeScreen deepLinkEvents={deepLinkEvents} />}
+        </Stack.Screen>
+        <Stack.Screen name="Profile" component={ProfileScreenWrapper} />
+        <Stack.Screen name="Settings" component={SettingsScreenWrapper} />
+        <Stack.Screen name="Details" component={DetailsScreenWrapper} />
+      </Stack.Navigator>
+    </NavigationContainer>
+  );
+}
+
+function HomeScreen({ deepLinkEvents }: { deepLinkEvents: string[] }) {
+  return <AppContent deepLinkEvents={deepLinkEvents} />;
+}
+
+function ProfileScreenWrapper() {
+  const isDarkMode = useIsDarkMode();
+  const textColor = isDarkMode ? '#fff' : '#333';
+  const secondaryText = isDarkMode ? '#aaa' : '#666';
+  
+  return (
+    <ProfileScreen 
+      isDarkMode={isDarkMode}
+      textColor={textColor}
+      secondaryText={secondaryText}
+    />
+  );
+}
+
+function SettingsScreenWrapper() {
+  const isDarkMode = useIsDarkMode();
+  const textColor = isDarkMode ? '#fff' : '#333';
+  const secondaryText = isDarkMode ? '#aaa' : '#666';
+  
+  return (
+    <SettingsScreen 
+      isDarkMode={isDarkMode}
+      textColor={textColor}
+      secondaryText={secondaryText}
+    />
+  );
+}
+
+function DetailsScreenWrapper() {
+  const isDarkMode = useIsDarkMode();
+  const textColor = isDarkMode ? '#fff' : '#333';
+  const secondaryText = isDarkMode ? '#aaa' : '#666';
+  
+  return (
+    <DetailsScreen 
+      isDarkMode={isDarkMode}
+      textColor={textColor}
+      secondaryText={secondaryText}
+    />
+  );
+}
+
+function AppContent({ deepLinkEvents }: { deepLinkEvents: string[] }) {
   const [events, setEvents] = useState<Array<{ time: string; event: string }>>([]);
   const isDarkMode = useIsDarkMode();
 
@@ -37,6 +154,15 @@ function AppContent() {
           @factory/app-shell Integration Test
         </Text>
         
+        <Navigation 
+          onEvent={addEvent}
+          deepLinkEvents={deepLinkEvents}
+          isDarkMode={isDarkMode}
+          cardBackground={cardBackground}
+          textColor={textColor}
+          secondaryText={secondaryText}
+        />
+
         {/* App Shell Features */}
         <Stores 
           onEvent={addEvent}

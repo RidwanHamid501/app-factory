@@ -2,6 +2,7 @@
   "expo": {
     "name": "factory-test-app",
     "slug": "factory-test-app",
+    "scheme": "factorytest",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -13,7 +14,8 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.ridwanhamid501.factorytestapp"
     },
     "android": {
       "adaptiveIcon": {
@@ -21,7 +23,8 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.ridwanhamid501.factorytestapp"
     },
     "web": {
       "favicon": "./assets/favicon.png"

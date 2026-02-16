@@ -1,5 +1,6 @@
-// Jest configuration for React Native with TypeScript
+// Jest configuration for React Native with React 19 support
 // Official docs: https://jestjs.io/docs/tutorial-react-native
+// React 19 compatibility: https://callstack.github.io/react-native-testing-library/docs/guides/react-19
 
 module.exports = {
   preset: 'react-native',
@@ -15,7 +16,7 @@ module.exports = {
   
   // Transform React Native modules
   transformIgnorePatterns: [
-    'node_modules/(?!(react-native|@react-native|@react-native-community)/)',
+    'node_modules/(?!(react-native|@react-native|@react-native-community|@react-navigation)/)',
   ],
   
   // File extensions
@@ -43,7 +44,12 @@ module.exports = {
     },
   },
   
-  // Setup files
+  // Setup files - run before test environment is set up
+  setupFiles: [
+    '<rootDir>/jest.globals.js',
+  ],
+  
+  // Setup files after environment - run after test environment is set up
   setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
   
   // Module name mapper for aliases and mocks

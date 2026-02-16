@@ -881,3 +881,555 @@ All 20 tests must pass to be considered complete:
 - [X] Test 17: Children access stores
 - [X] Test 18: State persistence across backgrounding
 - [X] Test 19: Error handling
+
+---
+
+## Test Suite: Navigation Architecture & Deep Linking
+
+### Prerequisites
+- ✅ React Navigation 7.x packages installed (`@react-navigation/native`, `@react-navigation/native-stack`)
+- ✅ Navigation dependencies installed (`react-native-screens`, `react-native-safe-area-context`)
+- ✅ Deep link URL scheme configured: `factorytest://`
+- ✅ Universal link domain configured: `https://factory-test.app`
+
+### Test 1: NavigationContainer Integration
+
+**Purpose:** Verify NavigationContainer wraps app and initializes correctly
+
+**Steps:**
+1. Kill and relaunch the app
+2. Observe the Navigation Testing section
+3. Check console logs
+
+**Expected Results:**
+
+**In the App UI:**
+- ✅ Navigation Testing card appears at the top
+- ✅ Current Route shows "Home"
+- ✅ Route Name (Hook) shows "Home"
+- ✅ No route params displayed initially
+- ✅ Navigation buttons are visible and enabled
+
+**In the Terminal Console Logs:**
+- ✅ `LOG  [Navigation] Ready`
+- ✅ `LOG  Navigation ready. Initial route: Home`
+- ✅ No navigation-related errors
+
+**Why:** Confirms NavigationContainer properly wraps the app with linking configuration
+
+---
+
+### Test 2: Basic Stack Navigation - Profile Screen
+
+**Purpose:** Verify basic stack navigation with typed params works
+
+**Steps:**
+1. From Home screen, tap "Profile" button
+2. Observe the screen change
+3. Observe the Navigation Testing section (if visible)
+4. Check event log
+5. Tap device back button or swipe back (iOS)
+
+**Expected Results:**
+
+**In the App UI:**
+- ✅ Screen transitions to Profile Screen
+- ✅ Profile Screen displays "User ID: 123"
+- ✅ Screen shows type-safe routing message
+- ✅ Event log shows "Navigate: Profile (userId: 123)"
+- ✅ Back navigation returns to Home screen
+
+**In the Terminal Console Logs:**
+- ✅ `LOG  Navigating to Profile {"userId":"123"}`
+- ✅ `LOG  Navigation: Home → Profile`
+
+**Why:** Confirms basic navigation and type-safe route parameters work correctly
+
+---
+
+### Test 3: Navigation with Optional Parameters
+
+**Purpose:** Verify optional route parameters are handled correctly
+
+**Steps:**
+1. From Home screen, tap "Settings" button
+2. Observe the Settings Screen
+3. Note the tab parameter
+4. Navigate back
+
+**Expected Results:**
+
+**In the App UI:**
+- ✅ Settings Screen displays
+- ✅ Tab shows "notifications"
+- ✅ Screen displays optional parameter message
+- ✅ Event log shows "Navigate: Settings (tab: notifications)"
+
+**Why:** Confirms optional route parameters work with type safety
+
+---
+
+### Test 4: Multiple Navigation Actions
+
+**Purpose:** Verify navigation stack is maintained correctly
+
+**Steps:**
+1. Tap "Profile" button
+2. From Profile screen, scroll down and tap "Settings" button (if accessible)
+3. Tap "Details" button
+4. Use back button multiple times
+5. Observe stack behavior
+
+**Expected Results:**
+
+**In the App UI:**
+- ✅ Each navigation adds to the stack
+- ✅ Back button correctly pops from stack
+- ✅ Current Route updates with each navigation
+- ✅ Route params reflect current screen params
+- ✅ Event log shows all navigation actions in order
+
+**Why:** Confirms navigation stack is properly maintained
+
+---
+
+### Test 5: Imperative Navigation (Outside React Components)
+
+**Purpose:** Verify imperative navigation API works from outside React components
+
+**Steps:**
+1. From Home screen, tap "Navigate Imperatively" button (orange/red)
+2. Observe the navigation
+3. Check event log
+4. Navigate back
+
+**Expected Results:**
+
+**In the App UI:**
+- ✅ Navigates to Profile Screen with userId "999"
+- ✅ Profile Screen displays "User ID: 999"
+- ✅ Event log shows "Imperative Navigate: Profile (userId: 999)"
+
+**In the Terminal Console Logs:**
+- ✅ `LOG  Navigating to Profile {"userId":"999"}`
+
+**Why:** Confirms `navigate()` function works imperatively (useful for push notifications, timers, etc.)
+
+---
+
+### Test 6: Type-Safe Navigation Hooks
+
+**Purpose:** Verify navigation hooks provide type-safe access
+
+**Steps:**
+1. Navigate to any screen with parameters
+2. Observe the Current Route Info section
+3. Compare Route Name (Hook) with Current Route
+4. Verify params are displayed correctly
+
+**Expected Results:**
+
+**In the App UI:**
+- ✅ `getCurrentRouteName()` matches `useTypedRoute()` name
+- ✅ Route params displayed match the navigation action
+- ✅ Params are properly typed (no "any" or "unknown")
+- ✅ Values update immediately with navigation
+
+**Why:** Confirms typed hooks (`useTypedNavigation`, `useTypedRoute`) work correctly
+
+---
+
+### Test 7: Deep Link - Custom Scheme (Home)
+
+**Purpose:** Verify custom URL scheme deep links work
+
+**Platform:** iOS Simulator or Android Emulator/Device
+
+**Steps:**
+1. Open terminal
+2. Run the appropriate command:
+   - **iOS Simulator:** `xcrun simctl openurl booted "factorytest://home"`
+   - **Android Device:** `adb shell am start -W -a android.intent.action.VIEW -d "factorytest://home" com.ridwanhamid501.factorytestapp`
+3. Observe the app
+
+**Expected Results:**
+
+**In the App UI:**
+- ✅ App opens or comes to foreground
+- ✅ Current Route shows "Home"
+- ✅ Recent Deep Links shows "factorytest://home (path: /)"
+- ✅ Event log shows navigation event
+
+**Why:** Confirms custom URL scheme deep linking works
+
+---
+
+### Test 8: Deep Link - Custom Scheme with Path Parameter
+
+**Purpose:** Verify deep links parse path parameters correctly
+
+**Steps:**
+1. Open terminal
+2. Run the appropriate command:
+   - **iOS:** `xcrun simctl openurl booted "factorytest://profile/user123"`
+   - **Android:** `adb shell am start -W -a android.intent.action.VIEW -d "factorytest://profile/user123" com.ridwanhamid501.factorytestapp`
+3. Observe the app
+
+**Expected Results:**
+
+**In the App UI:**
+- ✅ App navigates to Profile Screen
+- ✅ Profile Screen displays "User ID: user123"
+- ✅ Recent Deep Links shows "factorytest://profile/user123 (path: /profile/user123)"
+- ✅ Current Route shows "Profile"
+- ✅ Route Params shows {"userId": "user123"}
+
+**Why:** Confirms deep links correctly parse and navigate with path parameters
+
+---
+
+### Test 9: Deep Link - Query Parameters
+
+**Purpose:** Verify deep links parse query parameters correctly
+
+**Steps:**
+1. Open terminal
+2. Run the appropriate command:
+   - **iOS:** `xcrun simctl openurl booted "factorytest://settings?tab=notifications"`
+   - **Android:** `adb shell am start -W -a android.intent.action.VIEW -d "factorytest://settings?tab=notifications" com.ridwanhamid501.factorytestapp`
+3. Observe the app
+
+**Expected Results:**
+
+**In the App UI:**
+- ✅ App navigates to Settings Screen
+- ✅ Settings Screen displays "Tab: notifications"
+- ✅ Recent Deep Links shows "factorytest://settings?tab=notifications (path: /settings)"
+- ✅ Route Params shows {"tab": "notifications"}
+
+**Why:** Confirms query parameters are correctly parsed from deep links
+
+---
+
+### Test 10: Deep Link - Additional Test Cases
+
+**Purpose:** Verify various deep link scenarios
+
+**Steps:**
+1. Test with details screen:
+   - **iOS:** `xcrun simctl openurl booted "factorytest://details/42"`
+   - **Android:** `adb shell am start -W -a android.intent.action.VIEW -d "factorytest://details/42" com.ridwanhamid501.factorytestapp`
+
+2. Test invalid route (should fallback to home):
+   - **iOS:** `xcrun simctl openurl booted "factorytest://invalid"`
+   - **Android:** `adb shell am start -W -a android.intent.action.VIEW -d "factorytest://invalid" com.ridwanhamid501.factorytestapp`
+
+3. Test while app is backgrounded:
+   - Background the app
+   - Send a deep link
+   - App should come to foreground and navigate
+
+**Expected Results:**
+
+**For Details Link:**
+- ✅ App navigates to Details Screen
+- ✅ Details Screen displays "Detail ID: 42"
+- ✅ Recent Deep Links shows the URL
+- ✅ Current Route shows "Details"
+
+**For Invalid Link:**
+- ✅ App handles gracefully (likely stays on current screen or goes to home)
+- ✅ Recent Deep Links shows the URL
+- ✅ No crash occurs
+
+**For Backgrounded App:**
+- ✅ App comes to foreground
+- ✅ Navigation occurs
+- ✅ Deep link is logged
+
+**Why:** Ensures robust deep link handling across various scenarios
+
+---
+
+### Test 11: Cold Start with Deep Link
+
+**Purpose:** Verify app correctly handles deep links when launched from killed state
+
+**Steps:**
+1. Kill the app completely (swipe away from app switcher)
+2. Open it via deep link using terminal command:
+   - **iOS:** `xcrun simctl openurl booted "factorytest://profile/coldstart"`
+   - **Android:** `adb shell am start -W -a android.intent.action.VIEW -d "factorytest://profile/coldstart" com.ridwanhamid501.factorytestapp`
+3. Wait for app to fully launch
+4. Observe the Navigation Testing section
+
+**Expected Results:**
+
+**In the App UI:**
+- ✅ App launches and navigates to Profile Screen
+- ✅ Profile Screen displays "User ID: coldstart"
+- ✅ Recent Deep Links shows "factorytest://profile/coldstart"
+- ✅ Current Route shows "Profile"
+
+**Why:** Confirms React Navigation's `linking` configuration correctly handles deep links on cold start
+
+---
+
+### Test 12: Deep Link While App Running
+
+**Purpose:** Verify deep links work while app is in foreground
+
+**Steps:**
+1. Launch app normally (tap icon)
+2. Wait for app to be on Home screen
+3. While app is running in foreground, send a deep link via terminal:
+   - **iOS:** `xcrun simctl openurl booted "factorytest://settings?tab=privacy"`
+   - **Android:** `adb shell am start -W -a android.intent.action.VIEW -d "factorytest://settings?tab=privacy" com.ridwanhamid501.factorytestapp`
+4. Observe the behavior
+
+**Expected Results:**
+
+**In the App UI:**
+- ✅ App immediately responds to the deep link
+- ✅ Navigates to Settings screen
+- ✅ Settings Screen displays "Tab: privacy"
+- ✅ Recent Deep Links shows "factorytest://settings?tab=privacy"
+- ✅ Event log shows navigation occurred
+
+**Why:** Confirms React Navigation's `linking` prop handles deep links received while app is running
+
+---
+
+### Test 13: Navigation State Tracking
+
+**Purpose:** Verify navigation state changes are logged correctly
+
+**Steps:**
+1. Clear the event log
+2. Navigate to Profile screen
+3. Navigate to Settings screen
+4. Navigate back twice
+5. Review event log
+
+**Expected Results:**
+
+**In the App UI:**
+- ✅ Each navigation action appears in event log
+- ✅ Events show in chronological order
+- ✅ Event messages are clear and descriptive
+- ✅ Current Route value updates with each navigation
+
+**In the Terminal Console Logs:**
+- ✅ `LOG  Navigation: Home → Profile`
+- ✅ `LOG  Navigation: Profile → Settings`
+- ✅ `LOG  Navigation: Settings → Profile`
+- ✅ `LOG  Navigation: Profile → Home`
+
+**Why:** Confirms navigation state tracking works correctly
+
+---
+
+### Test 14: Go Back Function
+
+**Purpose:** Verify `goBack()` function works correctly
+
+**Steps:**
+1. From Home screen, navigate to Profile
+2. Tap "← Go Back" button
+3. Observe behavior
+4. Tap "← Go Back" again (now on Home screen)
+
+**Expected Results:**
+
+**In the App UI:**
+- ✅ First tap: Returns to Home screen
+- ✅ Event log shows "Navigate: Go Back"
+- ✅ Second tap: No navigation occurs (already at root)
+- ✅ Event log shows warning in console (not crash)
+
+**In the Terminal Console Logs:**
+- ✅ First tap: `LOG  Navigating back`
+- ✅ Second tap: `LOG  Cannot go back - either not ready or no history`
+
+**Why:** Confirms `goBack()` handles edge cases correctly
+
+---
+
+### Test 15: Universal Links (HTTPS)
+
+**Purpose:** Verify HTTPS universal links work
+
+**Note:** Universal links require proper domain configuration and may not work in development
+
+**Steps:**
+1. Open terminal
+2. Run the appropriate command:
+   - **iOS:** `xcrun simctl openurl booted "https://factory-test.app/profile/456"`
+   - **Android:** `adb shell am start -W -a android.intent.action.VIEW -d "https://factory-test.app/profile/456" com.ridwanhamid501.factorytestapp`
+3. Observe the app
+
+**Expected Results:**
+
+**In the App UI (if universal links are configured):**
+- ✅ App opens to Profile screen
+- ✅ Profile Screen displays "User ID: 456"
+- ✅ Recent Deep Links shows "https://factory-test.app/profile/456"
+
+**Alternative (if not configured):**
+- ⚠️ Browser opens instead of app (expected for dev environment)
+- ⚠️ Universal links require proper app-site-association configuration
+- ⚠️ For Android, you need to add intent filters for HTTPS in AndroidManifest.xml
+- ⚠️ For iOS, you need to add associated domains entitlement
+
+**Why:** Confirms universal links configuration is present (full setup requires production environment with domain verification)
+
+---
+
+### Test 16: Navigation Integration with Theme
+
+**Purpose:** Verify navigation works correctly with theme changes
+
+**Steps:**
+1. Navigate to Profile screen
+2. Toggle theme to dark mode
+3. Observe screen appearance
+4. Navigate back to Home
+5. Toggle theme to light mode
+
+**Expected Results:**
+
+**In the App UI:**
+- ✅ Profile screen renders with current theme
+- ✅ Theme changes apply immediately to navigated screens
+- ✅ No layout shifts or visual glitches during theme change
+- ✅ Navigation state persists across theme changes
+
+**Why:** Confirms navigation integrates properly with global theme state
+
+---
+
+### Test 17: Navigation Integration with Lifecycle
+
+**Purpose:** Verify navigation state persists across app backgrounding
+
+**Steps:**
+1. Navigate to Profile screen
+2. Background the app (home button)
+3. Wait 5 seconds
+4. Return to app
+5. Check current screen
+
+**Expected Results:**
+
+**In the App UI:**
+- ✅ App returns to Profile screen (not Home)
+- ✅ Route params are preserved
+- ✅ Navigation stack is intact
+- ✅ Lifecycle events logged but navigation state preserved
+
+**Why:** Confirms navigation state persists in memory across lifecycle events
+
+---
+
+### Test 18: Deep Link Parsing Utilities
+
+**Purpose:** Verify deep link parsing utilities work correctly
+
+**Note:** This is tested indirectly through the navigation feature
+
+**Steps:**
+1. Send various deep links to the app
+2. Observe event log details
+3. Verify scheme, path, and query params are parsed
+
+**Expected Results:**
+
+**In the App UI:**
+- ✅ Event log shows parsed components:
+  - "Scheme: factorytest"
+  - "Path: /profile/123" or similar
+  - "Query: {...}" when present
+- ✅ All URL components are correctly extracted
+- ✅ `parseDeepLink()` handles various URL formats
+
+**Why:** Confirms utility functions (`parseDeepLink`, `isValidAppURL`, `extractScreenFromDeepLink`) work correctly
+
+---
+
+### Test 19: Error Handling - Invalid Deep Links
+
+**Purpose:** Verify app handles malformed deep links gracefully
+
+**Steps:**
+1. Send an invalid deep link via terminal:
+   - **iOS:** `xcrun simctl openurl booted "factorytest://unknown-route"`
+   - **Android:** `adb shell am start -W -a android.intent.action.VIEW -d "factorytest://unknown-route" com.ridwanhamid501.factorytestapp`
+2. Observe app behavior
+
+**Expected Results:**
+
+**In the App UI:**
+- ✅ App doesn't crash
+- ✅ Stays on current screen or goes to Home
+- ✅ Event log may show the deep link attempt
+- ✅ No undefined behavior
+
+**In the Terminal Console Logs:**
+- ✅ Warning logged about unhandled route (not error)
+- ✅ No crash stacktrace
+
+**Why:** Confirms graceful handling of invalid deep links
+
+---
+
+### Test 20: Navigation Performance
+
+**Purpose:** Verify navigation transitions are smooth and performant
+
+**Steps:**
+1. Rapidly navigate between screens multiple times
+2. Observe animation smoothness
+3. Check for any lag or stuttering
+4. Monitor memory usage (if possible)
+
+**Expected Results:**
+
+**In the App UI:**
+- ✅ Transitions are smooth (60fps on device)
+- ✅ No visible lag or frame drops
+- ✅ No memory warnings
+- ✅ App remains responsive during rapid navigation
+
+**Why:** Confirms React Navigation 7.x native stack provides good performance
+
+---
+
+## Success Criteria: Navigation Architecture & Deep Linking
+
+All 20 tests must pass to be considered complete:
+
+### Basic Navigation (6 tests)
+- [X] Test 1: NavigationContainer integration
+- [X] Test 2: Basic stack navigation
+- [X] Test 3: Optional parameters
+- [X] Test 4: Multiple navigation actions
+- [X] Test 5: Imperative navigation
+- [X] Test 6: Type-safe hooks
+
+### Deep Linking (9 tests)
+- [X] Test 7: Custom scheme (home)
+- [X] Test 8: Path parameters
+- [X] Test 9: Query parameters
+- [X] Test 10: UI button testing
+- [X] Test 11: Initial URL detection
+- [X] Test 12: Deep link while running
+- [X] Test 13: Navigation state tracking
+- [X] Test 15: Universal links
+- [X] Test 18: Deep link parsing utilities
+
+### Integration & Edge Cases (5 tests)
+- [X] Test 14: Go back function
+- [X] Test 16: Theme integration
+- [X] Test 17: Lifecycle integration
+- [X] Test 19: Error handling
+- [X] Test 20: Performance
