@@ -13,6 +13,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "react-error-boundary": "^4.1.2",
     "zustand": "^5.0.11"
   },
   "devDependencies": {
@@ -37,10 +38,16 @@
   },
   "peerDependencies": {
     "@react-navigation/native": "^7.1.0",
+    "@sentry/react-native": ">=5.0.0",
     "react": ">=19.0.0",
     "react-native": ">=0.78.0",
     "react-native-safe-area-context": ">=5.0.0",
     "react-native-screens": ">=4.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@sentry/react-native": {
+      "optional": true
+    }
   },
   "keywords": [
     "react-native",

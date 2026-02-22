@@ -3,7 +3,12 @@ import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View, ScrollView } from 'react-native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { DefaultTheme, DarkTheme } from '@react-navigation/native';
-import { StoreInitializer, useIsDarkMode, NavigationContainer } from '@factory/app-shell';
+import { 
+  LifecycleProvider, 
+  StoreInitializer, 
+  useIsDarkMode, 
+  NavigationContainer 
+} from '@factory/app-shell';
 import { Lifecycle, Stores, Navigation } from './features/app-shell';
 import { EventLog } from './components';
 import { ProfileScreen, SettingsScreen, DetailsScreen } from './screens';
@@ -19,21 +24,65 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export default function App() {
   const [deepLinkEvents, setDeepLinkEvents] = useState<string[]>([]);
+  const [lifecycleEvents, setLifecycleEvents] = useState<string[]>([]);
 
   const handleDeepLink = (url: string, path: string) => {
     console.log('[Deep Link] Opened:', url);
     setDeepLinkEvents(prev => [...prev, `${url} (path: ${path})`]);
   };
 
+  const addLifecycleEvent = (event: string) => {
+    const timestamp = new Date().toLocaleTimeString();
+    setLifecycleEvents(prev => [`[${timestamp}] ${event}`, ...prev].slice(0, 10));
+  };
+
   return (
-    <StoreInitializer>
-      <AppNavigator deepLinkEvents={deepLinkEvents} handleDeepLink={handleDeepLink} />
-    </StoreInitializer>
+    <LifecycleProvider 
+      config={{
+        coldStartThreshold: 300000,
+        onAppStarting: () => {
+          console.log('[Lifecycle] App starting');
+          addLifecycleEvent('Config: onAppStarting fired');
+        },
+        onAppActive: () => {
+          console.log('[Lifecycle] App active');
+          addLifecycleEvent('Config: onAppActive fired');
+        },
+        onAppBackground: () => {
+          console.log('[Lifecycle] App background');
+          addLifecycleEvent('Config: onAppBackground fired');
+        },
+        onAppInactive: () => {
+          console.log('[Lifecycle] App inactive');
+          addLifecycleEvent('Config: onAppInactive fired');
+        },
+      }}
+    >
+      <StoreInitializer 
+        config={{
+          theme: {
+            defaultMode: 'auto',
+            followSystem: true,
+          }
+        }}
+      >
+        <AppNavigator 
+          deepLinkEvents={deepLinkEvents} 
+          lifecycleEvents={lifecycleEvents}
+          handleDeepLink={handleDeepLink} 
+        />
+      </StoreInitializer>
+    </LifecycleProvider>
   );
 }
 
-function AppNavigator({ deepLinkEvents, handleDeepLink }: { 
-  deepLinkEvents: string[]; 
+function AppNavigator({ 
+  deepLinkEvents, 
+  lifecycleEvents,
+  handleDeepLink 
+}: { 
+  deepLinkEvents: string[];
+  lifecycleEvents: string[];
   handleDeepLink: (url: string, path: string) => void;
 }) {
   const isDarkMode = useIsDarkMode();
@@ -74,7 +123,7 @@ function AppNavigator({ deepLinkEvents, handleDeepLink }: {
         }}
       >
         <Stack.Screen name="Home">
-          {() => <HomeScreen deepLinkEvents={deepLinkEvents} />}
+          {() => <HomeScreen deepLinkEvents={deepLinkEvents} lifecycleEvents={lifecycleEvents} />}
         </Stack.Screen>
         <Stack.Screen name="Profile" component={ProfileScreenWrapper} />
         <Stack.Screen name="Settings" component={SettingsScreenWrapper} />
@@ -84,8 +133,11 @@ function AppNavigator({ deepLinkEvents, handleDeepLink }: {
   );
 }
 
-function HomeScreen({ deepLinkEvents }: { deepLinkEvents: string[] }) {
-  return <AppContent deepLinkEvents={deepLinkEvents} />;
+function HomeScreen({ deepLinkEvents, lifecycleEvents }: { 
+  deepLinkEvents: string[];
+  lifecycleEvents: string[];
+}) {
+  return <AppContent deepLinkEvents={deepLinkEvents} lifecycleEvents={lifecycleEvents} />;
 }
 
 function ProfileScreenWrapper() {
@@ -130,7 +182,10 @@ function DetailsScreenWrapper() {
   );
 }
 
-function AppContent({ deepLinkEvents }: { deepLinkEvents: string[] }) {
+function AppContent({ deepLinkEvents, lifecycleEvents }: { 
+  deepLinkEvents: string[];
+  lifecycleEvents: string[];
+}) {
   const [events, setEvents] = useState<Array<{ time: string; event: string }>>([]);
   const isDarkMode = useIsDarkMode();
 
@@ -153,6 +208,34 @@ function AppContent({ deepLinkEvents }: { deepLinkEvents: string[] }) {
         <Text style={[styles.title, { color: textColor }]}>
           @factory/app-shell Integration Test
         </Text>
+
+        {/* Config-Based API Demo */}
+        <View style={[styles.section, { backgroundColor: cardBackground }]}>
+          <Text style={[styles.sectionTitle, { color: textColor }]}>
+            ✨ Config-Based API (NEW)
+          </Text>
+          <Text style={[styles.instructions, { color: secondaryText }]}>
+            This app now uses config-based initialization for all features:{'\n\n'}
+            • LifecycleProvider with event callbacks{'\n'}
+            • StoreInitializer with theme config{'\n'}
+            • NavigationContainer with deep links{'\n\n'}
+            See App.tsx for implementation details.
+          </Text>
+        </View>
+
+        {/* Lifecycle Events from Config */}
+        {lifecycleEvents.length > 0 && (
+          <View style={[styles.section, { backgroundColor: cardBackground }]}>
+            <Text style={[styles.sectionTitle, { color: textColor }]}>
+              Lifecycle Config Events
+            </Text>
+            {lifecycleEvents.map((event, idx) => (
+              <Text key={idx} style={[styles.eventItem, { color: secondaryText }]}>
+                {event}
+              </Text>
+            ))}
+          </View>
+        )}
         
         <Navigation 
           onEvent={addEvent}
@@ -163,7 +246,6 @@ function AppContent({ deepLinkEvents }: { deepLinkEvents: string[] }) {
           secondaryText={secondaryText}
         />
 
-        {/* App Shell Features */}
         <Stores 
           onEvent={addEvent}
           isDarkMode={isDarkMode}
@@ -180,7 +262,6 @@ function AppContent({ deepLinkEvents }: { deepLinkEvents: string[] }) {
           secondaryText={secondaryText}
         />
 
-        {/* Event Log */}
         <EventLog 
           events={events}
           onClear={clearEvents}
@@ -190,7 +271,6 @@ function AppContent({ deepLinkEvents }: { deepLinkEvents: string[] }) {
           secondaryText={secondaryText}
         />
 
-        {/* Test Instructions */}
         <View style={[styles.section, { backgroundColor: cardBackground }]}>
           <Text style={[styles.sectionTitle, { color: textColor }]}>Test Instructions</Text>
           <Text style={[styles.instructions, { color: secondaryText }]}>
@@ -237,5 +317,10 @@ const styles = StyleSheet.create({
   instructions: {
     fontSize: 13,
     lineHeight: 20,
+  },
+  eventItem: {
+    fontSize: 12,
+    marginBottom: 4,
+    fontFamily: 'monospace',
   },
 });

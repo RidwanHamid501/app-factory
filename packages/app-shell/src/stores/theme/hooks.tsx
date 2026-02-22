@@ -2,15 +2,20 @@ import { useEffect } from 'react';
 import { useColorScheme } from 'react-native';
 import { useThemeStore } from './themeStore';
 import { Logger } from '../../utils/logger';
+import type { ThemeConfig } from '../types';
 
-export function useInitializeTheme() {
+export function useInitializeTheme(config?: ThemeConfig) {
   const colorScheme = useColorScheme();
   const setSystemColorScheme = useThemeStore((state) => state.setSystemColorScheme);
   
   useEffect(() => {
-    Logger.info(`System color scheme: ${colorScheme}`);
-    setSystemColorScheme(colorScheme);
-  }, [colorScheme, setSystemColorScheme]);
+    const followSystem = config?.followSystem ?? true;
+    
+    if (followSystem) {
+      Logger.info(`System color scheme: ${colorScheme}`);
+      setSystemColorScheme(colorScheme);
+    }
+  }, [colorScheme, setSystemColorScheme, config?.followSystem]);
 }
 
 export function useTheme() {
@@ -43,3 +48,4 @@ export function useSpacing() {
 export function useIsDarkMode() {
   return useThemeStore((state) => state.theme.mode === 'dark');
 }
+

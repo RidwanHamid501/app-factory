@@ -1,5 +1,7 @@
 export { StoreInitializer } from './StoreInitializer';
 
+export type { StoreConfig, ThemeConfig, SettingsConfig } from './types';
+
 export {
   useThemeStore,
   useInitializeTheme,
@@ -70,3 +72,4 @@ export type {
   UserProperties,
   ITelemetryManager,
 } from './telemetry';
+
