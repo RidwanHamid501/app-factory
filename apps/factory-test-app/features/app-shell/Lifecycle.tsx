@@ -1,7 +1,5 @@
-import { useEffect, useState } from 'react';
-import { StyleSheet, Text, View, Pressable } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import {
-  lifecycleManager,
   useAppState,
   useStartupType,
   useColdStart,
@@ -20,8 +18,6 @@ interface LifecycleProps {
 }
 
 export function Lifecycle({ onEvent, isDarkMode, cardBackground, textColor, secondaryText }: LifecycleProps) {
-  const [isLifecycleInit, setIsLifecycleInit] = useState(false);
-  
   const appState = useAppState();
   const startupType = useStartupType();
   const isColdStart = useColdStart();
@@ -36,45 +32,12 @@ export function Lifecycle({ onEvent, isDarkMode, cardBackground, textColor, seco
     onEvent('Hook: useAppBackground fired');
   });
 
-  useEffect(() => {
-    lifecycleManager.initialize();
-    setIsLifecycleInit(true);
-    onEvent('LifecycleManager initialized');
-
-    const unsubscribeStarting = lifecycleManager.on('appStarting', () => {
-      onEvent('Event: appStarting');
-    });
-
-    const unsubscribeActive = lifecycleManager.on('appActive', () => {
-      onEvent('Event: appActive');
-    });
-
-    const unsubscribeBackground = lifecycleManager.on('appBackground', () => {
-      onEvent('Event: appBackground');
-    });
-
-    const unsubscribeInactive = lifecycleManager.on('appInactive', () => {
-      onEvent('Event: appInactive');
-    });
-
-    return () => {
-      unsubscribeStarting.unsubscribe();
-      unsubscribeActive.unsubscribe();
-      unsubscribeBackground.unsubscribe();
-      unsubscribeInactive.unsubscribe();
-      lifecycleManager.destroy();
-    };
-  }, []);
-
   return (
     <View style={[styles.section, { backgroundColor: cardBackground }]}>
       <Text style={[styles.sectionTitle, { color: textColor }]}>App Lifecycle</Text>
-      <View style={styles.row}>
-        <Text style={[styles.label, { color: secondaryText }]}>Manager Initialized:</Text>
-        <Text style={[styles.value, isLifecycleInit ? styles.success : styles.error]}>
-          {isLifecycleInit ? '✓ Yes' : '✗ No'}
-        </Text>
-      </View>
+      <Text style={[styles.info, { color: secondaryText }]}>
+        ℹ️ Now uses LifecycleProvider in App.tsx (config-based)
+      </Text>
       <View style={styles.row}>
         <Text style={[styles.label, { color: secondaryText }]}>App State:</Text>
         <Text style={[styles.value, { color: textColor }]}>{appState}</Text>
@@ -133,6 +96,11 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginBottom: 12,
   },
+  info: {
+    fontSize: 12,
+    marginBottom: 12,
+    fontStyle: 'italic',
+  },
   row: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -151,11 +119,5 @@ const styles = StyleSheet.create({
   },
   small: {
     fontSize: 11,
-  },
-  success: {
-    color: '#10b981',
-  },
-  error: {
-    color: '#ef4444',
   },
 });

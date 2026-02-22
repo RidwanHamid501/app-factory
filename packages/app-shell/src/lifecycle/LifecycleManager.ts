@@ -7,20 +7,31 @@ import { LifecycleCallback, LifecycleEvent } from './types';
 import { MAX_BACKGROUND_DURATION_MS } from './constants';
 import { Logger } from '../utils/logger';
 
+interface InitConfig {
+  coldStartThreshold?: number;
+  sessionTimeout?: number;
+}
+
 class LifecycleManager {
   private appStateSubscription: NativeEventSubscription | null = null;
   private eventSubscribers: Map<LifecycleEvent, Set<LifecycleCallback>> = new Map();
   private isInitialized = false;
+  private config: InitConfig = {};
 
-  initialize(): void {
+  initialize(config: InitConfig = {}): void {
     if (this.isInitialized) {
       Logger.warn('LifecycleManager already initialized');
       return;
     }
 
-    Logger.info('Initializing LifecycleManager');
+    this.config = {
+      coldStartThreshold: config.coldStartThreshold || MAX_BACKGROUND_DURATION_MS,
+      sessionTimeout: config.sessionTimeout || 1800000,
+    };
 
-    const initialState = AppState.currentState || 'unknown'; // Can be null at launch
+    Logger.info('Initializing LifecycleManager with config:', this.config);
+
+    const initialState = AppState.currentState || 'unknown';
     useLifecycleStore.getState().setAppState(initialState);
     this.determineStartupType();
 
@@ -66,7 +77,7 @@ class LifecycleManager {
 
     const { backgroundDuration } = useLifecycleStore.getState();
     
-    if (backgroundDuration > MAX_BACKGROUND_DURATION_MS) {
+    if (backgroundDuration > this.config.coldStartThreshold!) {
       Logger.info(`Long background duration (${backgroundDuration}ms). Warm start detected.`);
       store.setStartupType('warm');
       store.startNewSession();
@@ -111,7 +122,7 @@ class LifecycleManager {
 
   destroy(): void {
     Logger.info('Destroying LifecycleManager');
-    this.appStateSubscription?.remove(); // Modern API, not deprecated removeEventListener
+    this.appStateSubscription?.remove();
     this.eventSubscribers.clear();
     this.isInitialized = false;
   }
@@ -121,5 +132,4 @@ class LifecycleManager {
   }
 }
 
-// ES6 module pattern - naturally singleton
 export const lifecycleManager = new LifecycleManager();

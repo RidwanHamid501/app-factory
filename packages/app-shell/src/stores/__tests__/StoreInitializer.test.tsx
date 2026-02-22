@@ -63,7 +63,7 @@ describe('StoreInitializer', () => {
         </StoreInitializer>
       );
       
-      expect(Logger.info).toHaveBeenCalledWith('All stores initialized');
+      expect(Logger.info).toHaveBeenCalledWith('All stores initialized with config');
     });
 
     it('should log initialization message only once', () => {
@@ -74,7 +74,7 @@ describe('StoreInitializer', () => {
       );
       
       const initCalls = (Logger.info as jest.Mock).mock.calls.filter(
-        call => call[0] === 'All stores initialized'
+        call => call[0] === 'All stores initialized with config'
       );
       expect(initCalls.length).toBe(1);
       
@@ -85,7 +85,7 @@ describe('StoreInitializer', () => {
       );
       
       const updatedCalls = (Logger.info as jest.Mock).mock.calls.filter(
-        call => call[0] === 'All stores initialized'
+        call => call[0] === 'All stores initialized with config'
       );
       expect(updatedCalls.length).toBe(1);
     });
@@ -217,7 +217,7 @@ describe('StoreInitializer', () => {
       );
       
       const storeInitIndex = (Logger.info as jest.Mock).mock.calls.findIndex(
-        call => call[0] === 'All stores initialized'
+        call => call[0] === 'All stores initialized with config'
       );
       
       expect(storeInitIndex).toBeGreaterThanOrEqual(0);
@@ -255,7 +255,7 @@ describe('StoreInitializer', () => {
       );
       
       const initCalls = (Logger.info as jest.Mock).mock.calls.filter(
-        call => call[0] === 'All stores initialized'
+        call => call[0] === 'All stores initialized with config'
       );
       
       expect(initCalls.length).toBeGreaterThanOrEqual(2);

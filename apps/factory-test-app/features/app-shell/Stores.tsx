@@ -65,6 +65,9 @@ export function Stores({ onEvent, isDarkMode, cardBackground, textColor, seconda
       {/* Theme Store */}
       <View style={[styles.section, { backgroundColor: cardBackground }]}>
         <Text style={[styles.sectionTitle, { color: textColor }]}>Theme Store</Text>
+        <Text style={[styles.info, { color: secondaryText }]}>
+          ℹ️ Now uses StoreInitializer with theme config in App.tsx
+        </Text>
         <View style={styles.row}>
           <Text style={[styles.label, { color: secondaryText }]}>Theme Mode:</Text>
           <Text style={[styles.value, { color: textColor }]}>{themeMode}</Text>
@@ -259,6 +262,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     marginBottom: 12,
+  },
+  info: {
+    fontSize: 12,
+    marginBottom: 12,
+    fontStyle: 'italic',
   },
   row: {
     flexDirection: 'row',
