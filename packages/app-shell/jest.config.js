@@ -55,6 +55,7 @@ module.exports = {
   // Module name mapper for aliases and mocks
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
+    '^@sentry/react-native$': '<rootDir>/__mocks__/@sentry/react-native.js',
   },
   
   // Mock zustand for test isolation
