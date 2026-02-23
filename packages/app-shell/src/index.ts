@@ -3,3 +3,4 @@
 export * from './lifecycle';
 export * from './stores';
 export * from './navigation';
+export * from './errors';

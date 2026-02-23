@@ -7,9 +7,10 @@ import {
   LifecycleProvider, 
   StoreInitializer, 
   useIsDarkMode, 
-  NavigationContainer 
+  NavigationContainer,
+  ErrorBoundary
 } from '@factory/app-shell';
-import { Lifecycle, Stores, Navigation } from './features/app-shell';
+import { Lifecycle, Stores, Navigation, Errors } from './features/app-shell';
 import { EventLog } from './components';
 import { ProfileScreen, SettingsScreen, DetailsScreen } from './screens';
 
@@ -66,13 +67,49 @@ export default function App() {
           }
         }}
       >
-        <AppNavigator 
+        <AppWithErrorBoundary
           deepLinkEvents={deepLinkEvents} 
           lifecycleEvents={lifecycleEvents}
           handleDeepLink={handleDeepLink} 
         />
       </StoreInitializer>
     </LifecycleProvider>
+  );
+}
+
+function AppWithErrorBoundary({ 
+  deepLinkEvents, 
+  lifecycleEvents,
+  handleDeepLink 
+}: { 
+  deepLinkEvents: string[];
+  lifecycleEvents: string[];
+  handleDeepLink: (url: string, path: string) => void;
+}) {
+  const isDarkMode = useIsDarkMode();
+
+  return (
+    <ErrorBoundary
+      sentry={{
+        dsn: 'https://fe1eaea9dfb0a13be984f388a8c8e970@o4510932248428544.ingest.de.sentry.io/4510932254326864',
+        environment: __DEV__ ? 'development' : 'production',
+        enabled: true,
+      }}
+      showDetailedError={__DEV__}
+      isDarkMode={isDarkMode}
+      onError={(error, errorInfo) => {
+        console.error('[App] Error caught by boundary:', error.message);
+      }}
+      onReset={() => {
+        console.log('[App] Error boundary reset');
+      }}
+    >
+      <AppNavigator 
+        deepLinkEvents={deepLinkEvents} 
+        lifecycleEvents={lifecycleEvents}
+        handleDeepLink={handleDeepLink} 
+      />
+    </ErrorBoundary>
   );
 }
 
@@ -240,6 +277,14 @@ function AppContent({ deepLinkEvents, lifecycleEvents }: {
         <Navigation 
           onEvent={addEvent}
           deepLinkEvents={deepLinkEvents}
+          isDarkMode={isDarkMode}
+          cardBackground={cardBackground}
+          textColor={textColor}
+          secondaryText={secondaryText}
+        />
+
+        <Errors
+          onEvent={addEvent}
           isDarkMode={isDarkMode}
           cardBackground={cardBackground}
           textColor={textColor}

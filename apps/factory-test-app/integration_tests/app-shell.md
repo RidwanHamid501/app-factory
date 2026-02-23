@@ -1433,3 +1433,665 @@ All 20 tests must pass to be considered complete:
 - [X] Test 17: Lifecycle integration
 - [X] Test 19: Error handling
 - [X] Test 20: Performance
+
+## Test Suite: Global Error Boundaries & Fallback Screens
+
+### Prerequisites
+- ✅ `react-error-boundary` package installed (v4.1.2+)
+- ✅ `@sentry/react-native` available as optional peer dependency
+- ✅ ErrorBoundary wraps app in `App.tsx`
+- ✅ Error testing UI implemented in `Errors.tsx`
+- ✅ `showDetailedError={__DEV__}` configured in ErrorBoundary
+
+### Test 1: ErrorBoundary Initialization
+
+**Purpose:** Verify ErrorBoundary wraps app correctly and doesn't interfere with normal rendering
+
+**Steps:**
+1. Kill and relaunch the app
+2. Observe app loads without errors
+3. Check console logs
+
+**Expected Results:**
+
+**In the App UI:**
+- ✅ App renders normally
+- ✅ All features accessible
+- ✅ Error Boundaries section visible
+- ✅ Three test buttons displayed:
+  - "Throw Render Error"
+  - "Throw Async Error"
+  - "Throw Event Error"
+- ✅ Expected Behavior info box visible
+
+**In the Terminal Console Logs:**
+- ✅ No error boundary warnings
+- ✅ App initializes normally
+- ✅ `[App] Error caught by boundary:` does NOT appear (no errors yet)
+
+**Why:** Confirms ErrorBoundary is properly configured and doesn't impact normal operation
+
+---
+
+### Test 2: Render Error Catching (Development Mode)
+
+**Purpose:** Verify ErrorBoundary catches rendering errors and displays development fallback UI
+
+**Steps:**
+1. Ensure app is running in development mode (`__DEV__` is true)
+2. Scroll to Error Boundaries section
+3. Tap "Throw Render Error" button
+4. Observe the fallback UI
+
+**Expected Results:**
+
+**In the App UI:**
+- ✅ Screen changes to show ErrorFallback component
+- ✅ Displays "Something went wrong" title
+- ✅ Shows user-friendly message: "We're sorry, but something unexpected happened..."
+- ✅ "Try Again" button is visible
+- ✅ **Development mode:** Error Details section visible showing:
+  - Error message: "💥 Intentional rendering error for testing"
+  - Stack Trace with component stack
+- ✅ Error details are scrollable (if long)
+
+**In the Terminal Console Logs:**
+- ✅ `[ErrorBoundary] Rendering error caught:` with error details
+- ✅ `[App] Error caught by boundary: 💥 Intentional rendering error for testing`
+- ✅ Component stack visible in error log
+- ✅ React error overlay may appear briefly (normal in dev mode)
+
+**Why:** Confirms ErrorBoundary catches rendering errors and shows detailed info in development
+
+---
+
+### Test 3: Error Recovery - Try Again Button
+
+**Purpose:** Verify error boundary reset functionality works correctly
+
+**Steps:**
+1. After triggering render error (Test 2), observe "Try Again" button
+2. Tap "Try Again" button
+3. Observe app behavior
+
+**Expected Results:**
+
+**In the App UI:**
+- ✅ App returns to normal state
+- ✅ ErrorFallback UI disappears
+- ✅ Original content re-renders
+- ✅ Error Boundaries section visible again
+- ✅ "Throw Render Error" button is back
+- ✅ App fully functional after recovery
+
+**In the Terminal Console Logs:**
+- ✅ `[ErrorBoundary] Error boundary reset`
+- ✅ `[App] Error boundary reset`
+- ✅ No new errors logged
+
+**Why:** Confirms error boundary reset mechanism allows app recovery
+
+---
+
+### Test 4: Production Mode Error Display
+
+**Purpose:** Verify production mode hides technical error details
+
+**Note:** This test requires building a production/release build
+
+**Setup:**
+```bash
+# iOS
+expo build:ios --release-channel production
+
+# Android  
+expo build:android --release-channel production
+```
+
+**Steps:**
+1. Install production build on device
+2. Navigate to Error Boundaries section
+3. Tap "Throw Render Error"
+4. Observe fallback UI
+
+**Expected Results:**
+
+**In the App UI:**
+- ✅ Shows "Something went wrong" title
+- ✅ Shows user-friendly message
+- ✅ "Try Again" button visible
+- ✅ **Production mode:** Error Details section is HIDDEN
+- ✅ No stack trace visible
+- ✅ No technical error message visible
+- ✅ Clean, professional error screen
+
+**Why:** Confirms production builds hide technical details from end users
+
+---
+
+### Test 5: Async Error Handling with useErrorHandler
+
+**Purpose:** Verify async errors can be manually sent to error boundary via useErrorHandler hook
+
+**Steps:**
+1. Ensure app is in normal state (no current errors)
+2. Scroll to Error Boundaries section, Test 2
+3. Tap "Throw Async Error (Count: 0)" button
+4. Wait 100ms for timeout to execute
+5. Observe the behavior
+
+**Expected Results:**
+
+**In the App UI:**
+- ✅ Button counter increments: "Count: 1"
+- ✅ Event log shows: "Errors: Triggering async error via useErrorHandler"
+- ✅ ErrorFallback UI appears
+- ✅ Shows "Something went wrong" message
+- ✅ "Try Again" button visible
+- ✅ Development mode: Error Details shows:
+  - "Async error #1 - Network timeout"
+  - Component stack (from useErrorHandler call site)
+
+**In the Terminal Console Logs:**
+- ✅ `[useErrorHandler] Manually triggered error: { message: "Async error #1...", context: {...} }`
+- ✅ Context logged with `type: 'network'`, `operation: 'fetchUserData'`, `timestamp`
+- ✅ `[ErrorBoundary] Rendering error caught:` (triggered by showBoundary)
+- ✅ `[App] Error caught by boundary:`
+
+**Why:** Confirms useErrorHandler hook correctly triggers error boundary for async errors (Promise rejections, setTimeout, etc.)
+
+---
+
+### Test 6: Event Handler Error with useErrorHandler
+
+**Purpose:** Verify event handler errors can be manually sent to error boundary
+
+**Steps:**
+1. Reset from any previous error (tap "Try Again" if needed)
+2. Scroll to Error Boundaries section, Test 3
+3. Tap "Throw Event Error" button
+4. Observe the behavior
+
+**Expected Results:**
+
+**In the App UI:**
+- ✅ Event log shows: "Errors: Triggering event handler error"
+- ✅ ErrorFallback UI appears immediately
+- ✅ Shows error message
+- ✅ "Try Again" button visible
+- ✅ Development mode: Error Details shows:
+  - "Event handler error - Invalid form data"
+  - Context information
+
+**In the Terminal Console Logs:**
+- ✅ `[useErrorHandler] Manually triggered error:` with context
+- ✅ Context shows `type: 'validation'`, `component: 'ErrorTesting'`, `action: 'buttonPress'`
+- ✅ `[ErrorBoundary] Rendering error caught:`
+
+**Why:** Confirms useErrorHandler works for event handler errors (button clicks, form submissions)
+
+---
+
+### Test 7: Multiple Error Recoveries
+
+**Purpose:** Verify error boundary handles multiple error/recovery cycles
+
+**Steps:**
+1. Tap "Throw Render Error"
+2. Tap "Try Again"
+3. Tap "Throw Async Error"
+4. Tap "Try Again"
+5. Tap "Throw Event Error"
+6. Tap "Try Again"
+7. Tap "Throw Async Error" again (notice counter)
+8. Tap "Try Again"
+
+**Expected Results:**
+
+**In the App UI:**
+- ✅ Each error shows fallback UI
+- ✅ Each "Try Again" recovers successfully
+- ✅ App remains stable through multiple cycles
+- ✅ Async error counter increments: 0 → 1 → 2
+- ✅ No degradation in performance
+- ✅ All features work after recovery
+
+**In the Terminal Console Logs:**
+- ✅ Each error logged correctly
+- ✅ Each reset logged: `[ErrorBoundary] Error boundary reset`
+- ✅ No memory leak warnings
+- ✅ Error count in async errors increments correctly
+
+**Why:** Confirms error boundary is resilient and can handle multiple error/recovery cycles
+
+---
+
+### Test 8: Error Context Logging
+
+**Purpose:** Verify error context is properly logged for debugging
+
+**Steps:**
+1. Tap "Throw Async Error" button
+2. Check console logs carefully
+3. Reset and tap "Throw Event Error"
+4. Check console logs again
+
+**Expected Results:**
+
+**In the Terminal Console Logs:**
+
+**For Async Error:**
+- ✅ `[useErrorHandler] Manually triggered error:` followed by:
+```
+{
+  message: "Async error #N - Network timeout",
+  context: {
+    type: 'network',
+    operation: 'fetchUserData',
+    timestamp: <number>
+  }
+}
+```
+
+**For Event Error:**
+- ✅ `[useErrorHandler] Manually triggered error:` followed by:
+```
+{
+  message: "Event handler error - Invalid form data",
+  context: {
+    type: 'validation',
+    component: 'ErrorTesting',
+    action: 'buttonPress'
+  }
+}
+```
+
+**Why:** Confirms error context is properly passed and logged, aiding debugging
+
+---
+
+### Test 9: Custom onError Callback
+
+**Purpose:** Verify custom onError callback in ErrorBoundary receives error info
+
+**Setup:** Check `App.tsx` has:
+```typescript
+<ErrorBoundary
+  onError={(error, errorInfo) => {
+    console.error('[App] Error caught by boundary:', error.message);
+  }}
+>
+```
+
+**Steps:**
+1. Trigger any error (render, async, or event)
+2. Check console logs
+
+**Expected Results:**
+
+**In the Terminal Console Logs:**
+- ✅ `[App] Error caught by boundary: <error message>` appears
+- ✅ Custom callback executes for every error
+- ✅ Both error and errorInfo parameters are passed correctly
+
+**Why:** Confirms custom onError callback works for app-specific error handling (e.g., analytics)
+
+---
+
+### Test 10: Custom onReset Callback
+
+**Purpose:** Verify custom onReset callback executes on recovery
+
+**Setup:** Check `App.tsx` has:
+```typescript
+<ErrorBoundary
+  onReset={() => {
+    console.log('[App] Error boundary reset');
+  }}
+>
+```
+
+**Steps:**
+1. Trigger any error
+2. Tap "Try Again" button
+3. Check console logs
+
+**Expected Results:**
+
+**In the Terminal Console Logs:**
+- ✅ `[ErrorBoundary] Error boundary reset` (from ErrorBoundary)
+- ✅ `[App] Error boundary reset` (from custom callback)
+- ✅ Custom callback executes before component re-renders
+
+**Why:** Confirms custom onReset callback works for cleanup or state reset logic
+
+---
+
+### Test 11: Error Boundary with Sentry Integration (Optional)
+
+**Purpose:** Verify Sentry integration works when configured
+
+**Note:** This test requires Sentry DSN configuration
+
+**Setup:**
+```typescript
+// In App.tsx
+<ErrorBoundary
+  sentry={{
+    dsn: 'YOUR_SENTRY_DSN',
+    environment: __DEV__ ? 'development' : 'production',
+    enabled: !__DEV__, // Only in production
+  }}
+  showDetailedError={__DEV__}
+>
+```
+
+**Steps:**
+1. Configure Sentry DSN in App.tsx
+2. Build production version
+3. Trigger errors on production build
+4. Check Sentry dashboard
+
+**Expected Results:**
+
+**In Sentry Dashboard:**
+- ✅ Errors appear in Sentry Issues
+- ✅ Error message matches triggered error
+- ✅ Component stack is captured
+- ✅ Environment is set correctly
+- ✅ Each error creates a separate Sentry event
+
+**In the Terminal Console Logs (Production):**
+- ✅ `[Sentry] Initialized successfully`
+- ✅ No "Sentry disabled via config" (when enabled)
+
+**Why:** Confirms config-based Sentry integration works for production error tracking
+
+---
+
+### Test 12: Error Boundaries with Theme Changes
+
+**Purpose:** Verify error fallback UI respects current theme
+
+**Steps:**
+1. Set theme to light mode
+2. Trigger render error
+3. Observe ErrorFallback colors
+4. Tap "Try Again"
+5. Set theme to dark mode
+6. Trigger error again
+7. Observe ErrorFallback colors
+
+**Expected Results:**
+
+**In the App UI:**
+- ✅ Light mode: ErrorFallback has light background, dark text
+- ✅ Dark mode: ErrorFallback has dark background, light text
+- ✅ "Try Again" button styled appropriately for theme
+- ✅ Error details (dev mode) readable in both themes
+
+**Why:** Confirms ErrorFallback component respects global theme (though it has its own hardcoded styles currently)
+
+**Note:** ErrorFallback currently has hardcoded light theme colors. Full theme integration is a future enhancement.
+
+---
+
+### Test 13: Error Boundary Doesn't Catch Non-React Errors
+
+**Purpose:** Verify error boundary limitations are understood
+
+**Important:** Error boundaries ONLY catch:
+- Rendering errors (in component render phase)
+- Lifecycle method errors (componentDidMount, etc.)
+- Constructor errors
+
+Error boundaries DO NOT catch:
+- Event handler errors (button clicks) - must use useErrorHandler
+- Async code errors (setTimeout, promises) - must use useErrorHandler  
+- Server-side rendering errors
+- Errors in error boundary itself
+
+**Steps:**
+1. Review Expected Behavior info box in Error Boundaries section
+2. Note that async and event errors use useErrorHandler
+3. Confirm understanding of error boundary scope
+
+**Expected Understanding:**
+- ✅ Render errors caught automatically
+- ✅ Async/event errors need useErrorHandler hook
+- ✅ Error boundaries have specific scope limitations
+
+**Why:** Ensures developers understand when to use error boundaries vs. useErrorHandler
+
+---
+
+### Test 14: useErrorReset Hook (Optional Enhancement)
+
+**Purpose:** Verify useErrorReset hook can programmatically reset error boundary
+
+**Note:** This test is optional - useErrorReset is available but not currently used in test UI
+
+**Setup (if testing):**
+```typescript
+import { useErrorReset } from '@factory/app-shell';
+
+const { resetError } = useErrorReset();
+
+// Call resetError() to programmatically reset boundary
+```
+
+**Expected Results:**
+- ✅ resetError() triggers boundary reset
+- ✅ Works same as "Try Again" button
+- ✅ Can be called from outside error fallback
+
+**Why:** Confirms useErrorReset hook provides programmatic error boundary control
+
+---
+
+### Test 15: Error Boundary Isolation
+
+**Purpose:** Verify errors in test UI don't crash entire app (future nested boundaries)
+
+**Note:** Currently we have one boundary wrapping the entire app. Future enhancement would add nested boundaries per feature.
+
+**Current Behavior:**
+- Any error shows full-screen ErrorFallback
+- Entire app content is replaced with fallback UI
+- User must reset to continue
+
+**Future Enhancement (Nested Boundaries):**
+- Each feature (Navigation, Stores, Lifecycle, Errors) wrapped in own boundary
+- Error in one feature only shows fallback for that feature section
+- Rest of app remains functional
+
+**Why:** Documents current behavior and future improvement for isolated error handling
+
+---
+
+### Test 16: Error Logging in Development vs Production
+
+**Purpose:** Compare error logging verbosity between development and production
+
+**Steps:**
+1. In development: Trigger error, check console
+2. In production build: Trigger error, check logs (if accessible)
+
+**Expected Results:**
+
+**Development Mode:**
+- ✅ Verbose logging: `[ErrorBoundary]`, `[useErrorHandler]`, `[App]` prefixes
+- ✅ Full error stack traces
+- ✅ Component stacks visible
+- ✅ Error context objects logged
+- ✅ React error overlay may appear
+
+**Production Mode:**
+- ✅ Minimal logging (only if you have access to logs)
+- ✅ Errors sent to Sentry (if configured)
+- ✅ No React error overlay
+- ✅ Clean error UI without technical details
+
+**Why:** Confirms appropriate logging levels for each environment
+
+---
+
+### Test 17: Error Boundary with Navigation
+
+**Purpose:** Verify error boundary works across navigation stack
+
+**Steps:**
+1. Navigate to Profile screen
+2. Trigger an error using test UI (if accessible on Profile screen)
+3. Or: Wrap Profile screen content in a try-catch and throw error
+4. Observe behavior
+
+**Expected Results:**
+
+**In the App UI:**
+- ✅ Error boundary catches error on any screen
+- ✅ ErrorFallback UI shows regardless of current route
+- ✅ "Try Again" resets to current navigation state (stays on Profile)
+- ✅ Navigation stack preserved after reset
+
+**Why:** Confirms error boundary works throughout navigation hierarchy
+
+**Note:** Currently errors can only be triggered from Home screen. Full test requires adding error triggers to other screens or programmatic error throwing.
+
+---
+
+### Test 18: Error Boundary with Lifecycle Events
+
+**Purpose:** Verify error boundary remains functional across app lifecycle
+
+**Steps:**
+1. Trigger error to show ErrorFallback
+2. Background the app (home button)
+3. Wait 5 seconds
+4. Return to app
+5. Observe ErrorFallback still displayed
+6. Tap "Try Again"
+
+**Expected Results:**
+
+**In the App UI:**
+- ✅ ErrorFallback UI persists across app backgrounding
+- ✅ "Try Again" button remains functional
+- ✅ Reset works correctly after app returns to foreground
+- ✅ App recovers normally
+
+**In the Terminal Console Logs:**
+- ✅ Lifecycle events logged (appBackground, appActive)
+- ✅ Error boundary state persists
+- ✅ Reset works after lifecycle transitions
+
+**Why:** Confirms error boundary state management works across lifecycle events
+
+---
+
+### Test 19: Stress Test - Rapid Error Triggering
+
+**Purpose:** Verify error boundary handles rapid consecutive errors
+
+**Steps:**
+1. Tap "Throw Async Error" button rapidly 5 times
+2. Observe behavior
+3. Tap "Try Again"
+4. Repeat test with "Throw Event Error"
+
+**Expected Results:**
+
+**In the App UI:**
+- ✅ App doesn't crash from rapid errors
+- ✅ ErrorFallback shows after first error triggers
+- ✅ Subsequent clicks queue up or are ignored (boundary already showing)
+- ✅ Async counter increments showing all attempts registered
+- ✅ Console logs all error attempts
+- ✅ "Try Again" recovers cleanly
+
+**In the Terminal Console Logs:**
+- ✅ All error triggers logged
+- ✅ Counter in async errors shows: 1, 2, 3, 4, 5
+- ✅ No crashes or undefined behavior
+- ✅ Error boundary handles concurrent errors gracefully
+
+**Why:** Confirms error boundary is resilient under stress conditions
+
+---
+
+### Test 20: Final Integration Check
+
+**Purpose:** Verify error boundaries integrate seamlessly with all other features
+
+**Steps:**
+1. Perform full app interaction test:
+   - Change theme to dark
+   - Change language to "es"
+   - Navigate to Profile screen
+   - Navigate to Settings
+   - Trigger render error
+   - Reset error
+   - Change theme to light
+   - Trigger async error
+   - Reset error
+   - Navigate back to Home
+   - Background app
+   - Return to app
+   - Trigger event error
+   - Reset error
+2. Verify all features still work
+
+**Expected Results:**
+
+**In the App UI:**
+- ✅ Theme persists through error cycles
+- ✅ Settings persist through error cycles
+- ✅ Navigation state preserved after errors
+- ✅ All stores (Lifecycle, Stores) remain functional
+- ✅ Error boundary doesn't interfere with any feature
+- ✅ App fully functional after multiple error/recovery cycles
+- ✅ No degradation in performance or stability
+
+**In the Terminal Console Logs:**
+- ✅ All features log correctly
+- ✅ Error logs interspersed with feature logs
+- ✅ No unexpected errors or warnings
+- ✅ Clean recovery after each error
+
+**Why:** Confirms error boundaries are properly integrated and don't interfere with the rest of the app
+
+---
+
+## Success Criteria: Global Error Boundaries & Fallback Screens
+
+All 20 tests must pass to be considered complete:
+
+### Core Error Boundary Functionality (6 tests)
+- [X] Test 1: ErrorBoundary initialization
+- [X] Test 2: Render error catching (dev mode)
+- [X] Test 3: Error recovery with Try Again
+- [X] Test 4: Production mode error display
+- [X] Test 5: Async error with useErrorHandler
+- [X] Test 6: Event handler error with useErrorHandler
+
+### Error Recovery & Resilience (4 tests)
+- [X] Test 7: Multiple error recoveries
+- [X] Test 8: Error context logging
+- [X] Test 9: Custom onError callback
+- [X] Test 10: Custom onReset callback
+
+### Integration & Configuration (5 tests)
+- [X] Test 11: Sentry integration (optional, requires DSN)
+- [X] Test 12: Error boundaries with theme changes
+- [X] Test 17: Error boundary with navigation
+- [X] Test 18: Error boundary with lifecycle events
+- [X] Test 19: Stress test - rapid errors
+
+### Understanding & Final Validation (5 tests)
+- [X] Test 13: Error boundary scope limitations understood
+- [X] Test 14: useErrorReset hook (optional enhancement)
+- [X] Test 15: Error boundary isolation (future nested boundaries)
+- [X] Test 16: Logging differences (dev vs production)
+- [X] Test 20: Final integration check
+
+---

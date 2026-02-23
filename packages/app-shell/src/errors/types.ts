@@ -20,6 +20,7 @@ export interface ErrorBoundaryConfig {
   onReset?: () => void;
   resetKeys?: Array<string | number>;
   showDetailedError?: boolean;
+  isDarkMode?: boolean;
 }
 
 // Props passed to fallback components - Official docs: https://github.com/bvaughn/react-error-boundary#fallbackcomponent-prop
@@ -27,4 +28,5 @@ export interface ErrorFallbackProps {
   error: Error;
   resetErrorBoundary: (...args: any[]) => void;
   isDevelopment: boolean;
+  isDarkMode?: boolean;
 }
