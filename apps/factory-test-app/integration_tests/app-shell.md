@@ -2095,3 +2095,337 @@ All 20 tests must pass to be considered complete:
 - [X] Test 20: Final integration check
 
 ---
+
+## Test Suite: App-Wide Loading & Splash Orchestration
+
+### Test 1: App Initialization Status
+
+**Purpose:** Verify loading state accurately reflects app initialization
+
+**Steps:**
+1. Kill the app completely
+2. Launch the app fresh
+3. Scroll to "App-Wide Loading & Splash" section immediately
+4. Observe the status indicators
+
+**Expected Results:**
+
+**In the App UI:**
+- ✅ "App Ready" transitions from "No" (red) to "Yes" (green) within 1-2 seconds
+- ✅ "Initializing" transitions from "Yes" to "No" correspondingly
+- ✅ "Completed Tasks" shows count (0 or more, depending on startup tasks)
+- ✅ "Failed Tasks" shows 0 initially
+- ✅ Status section displays real-time initialization state
+
+**In the Terminal Console Logs:**
+- ✅ `LOG  [LoadingStore] Starting initialization`
+- ✅ `LOG  [LoadingStore] App marked as ready`
+- ✅ `LOG  [SplashController] Splash hidden successfully`
+
+**Why:** Confirms loading state hooks accurately track the app's initialization lifecycle
+
+---
+
+### Test 2: Splash Screen Visibility Check
+
+**Purpose:** Verify splash screen is automatically hidden after initialization
+
+**Steps:**
+1. Launch the app fresh
+2. Wait for app to fully load (1-2 seconds)
+3. Scroll to "App-Wide Loading & Splash" section
+4. Tap "Check Visibility" button
+
+**Expected Results:**
+
+**In the App UI:**
+- ✅ Event log shows "Loading: Splash visible = false"
+- ✅ No splash screen is visible on the device
+
+**In the Terminal Console Logs:**
+- ✅ `LOG  [LoadingProvider] App ready!` (if using LoadingProvider)
+
+**Why:** Confirms splash screen is properly hidden after app initialization completes
+
+---
+
+### Test 3: Manual Splash Control
+
+**Purpose:** Verify manual splash screen control works correctly
+
+**Steps:**
+1. Tap "Hide Splash" button in "Splash Control" section
+2. Check event log
+3. Tap "Check Visibility" again
+
+**Expected Results:**
+
+**In the App UI:**
+- ✅ Event log shows "Loading: Manually hiding splash"
+- ✅ Event log shows "Loading: Splash hidden"
+- ✅ Event log shows "Loading: Splash visible = false"
+- ✅ No errors occur (splash already hidden gracefully)
+
+**In the Terminal Console Logs:**
+- ✅ `LOG  [SplashController] Splash already hidden` (or similar)
+
+**Why:** Confirms `useSplashControl` hook provides safe manual control with idempotent behavior
+
+---
+
+### Test 4: Loading Overlay Display
+
+**Purpose:** Verify LoadingOverlay component renders correctly
+
+**Steps:**
+1. Scroll to "Loading Overlay" section
+2. Tap "Show Overlay" button
+3. Observe the overlay
+4. Wait 2 seconds for it to auto-dismiss
+
+**Expected Results:**
+
+**In the App UI:**
+- ✅ Full-screen overlay appears immediately
+- ✅ Dark background with opacity (rgba 0,0,0,0.7)
+- ✅ White spinning ActivityIndicator in center
+- ✅ Message "Processing your request..." displays below spinner
+- ✅ Overlay covers all content (z-index 9999)
+- ✅ Overlay auto-dismisses after 2 seconds
+- ✅ Event log shows "Loading: Showing loading overlay"
+- ✅ Event log shows "Loading: Loading overlay hidden"
+
+**In the Terminal Console Logs:**
+- ✅ No errors or warnings
+
+**Why:** Confirms LoadingOverlay renders with correct styling and positioning
+
+---
+
+### Test 5: Transparent Loading Overlay
+
+**Purpose:** Verify LoadingOverlay transparent mode works correctly
+
+**Steps:**
+1. Tap "Show Transparent" button
+2. Observe the overlay appearance
+3. Wait 2 seconds for auto-dismiss
+
+**Expected Results:**
+
+**In the App UI:**
+- ✅ Overlay appears with lighter background (rgba 0,0,0,0.3)
+- ✅ Content below overlay is more visible through transparency
+- ✅ Message "Please wait..." displays
+- ✅ ActivityIndicator still clearly visible
+- ✅ Overlay auto-dismisses after 2 seconds
+- ✅ Event log shows "Loading: Showing transparent overlay"
+
+**In the Terminal Console Logs:**
+- ✅ No errors or warnings
+
+**Why:** Confirms LoadingOverlay transparent prop correctly modifies overlay appearance
+
+---
+
+### Test 6: Loading State Updates
+
+**Purpose:** Verify loading state hooks provide real-time updates
+
+**Steps:**
+1. Kill and restart app
+2. Immediately observe "Current Status" section during initialization
+3. Watch status values change in real-time
+
+**Expected Results:**
+
+**In the App UI:**
+- ✅ Status values update dynamically without manual refresh
+- ✅ "App Ready" transitions smoothly from No to Yes
+- ✅ "Initializing" transitions inversely
+- ✅ Task counts update if any initialization tasks run
+- ✅ All hooks (`useAppReady`, `useLoadingState`) provide reactive data
+
+**In the Terminal Console Logs:**
+- ✅ Initialization sequence logs appear
+- ✅ No unnecessary re-renders or performance warnings
+
+**Why:** Confirms loading hooks use Zustand selectors correctly for reactive state updates
+
+---
+
+### Test 7: Loading State in Light Mode
+
+**Purpose:** Verify loading UI works correctly in light theme
+
+**Steps:**
+1. Navigate to "Stores" section
+2. Tap "Set Light Mode"
+3. Scroll to "App-Wide Loading & Splash" section
+4. Tap "Show Overlay" button
+
+**Expected Results:**
+
+**In the App UI:**
+- ✅ Loading section renders with light theme colors
+- ✅ Status badges use light mode backgrounds
+- ✅ Text is clearly readable
+- ✅ Loading overlay still uses dark overlay (consistent UX)
+- ✅ All buttons and UI elements properly themed
+
+**In the Terminal Console Logs:**
+- ✅ No errors or warnings
+
+**Why:** Confirms loading UI adapts correctly to theme changes
+
+---
+
+### Test 8: Loading State in Dark Mode
+
+**Purpose:** Verify loading UI works correctly in dark theme
+
+**Steps:**
+1. Navigate to "Stores" section
+2. Tap "Set Dark Mode"
+3. Scroll to "App-Wide Loading & Splash" section
+4. Observe appearance
+5. Tap "Show Overlay" button
+
+**Expected Results:**
+
+**In the App UI:**
+- ✅ Loading section uses dark theme colors
+- ✅ Status badges have appropriate dark mode styling
+- ✅ Green/red badges remain clearly visible
+- ✅ Text contrast is sufficient for readability
+- ✅ Loading overlay maintains consistent appearance
+
+**In the Terminal Console Logs:**
+- ✅ No errors or warnings
+
+**Why:** Confirms loading UI properly follows dark theme styling
+
+---
+
+### Test 9: Multiple Overlay Triggers
+
+**Purpose:** Verify overlay behavior with rapid successive calls
+
+**Steps:**
+1. Tap "Show Overlay" button
+2. Immediately tap "Show Transparent" button (before first overlay dismisses)
+3. Observe behavior
+
+**Expected Results:**
+
+**In the App UI:**
+- ✅ First overlay appears
+- ✅ Second tap either queues or shows transparent overlay after first dismisses
+- ✅ No visual glitches or overlay stacking issues
+- ✅ Event log shows both "show" and "hide" events
+- ✅ App remains responsive
+
+**In the Terminal Console Logs:**
+- ✅ No errors or warnings
+- ✅ No React state update warnings
+
+**Why:** Confirms overlay state management handles rapid interactions gracefully
+
+---
+
+### Test 10: useLoadingState Hook Accuracy
+
+**Purpose:** Verify `useLoadingState` returns complete and accurate data
+
+**Steps:**
+1. Launch app
+2. Observe all status values in the "Current Status" section
+3. Compare with expected initialization state
+
+**Expected Results:**
+
+**In the App UI:**
+- ✅ All properties are defined and accessible:
+  - `isInitializing` (boolean)
+  - `isAppReady` (boolean)
+  - `completedTasks` (array)
+  - `failedTasks` (array)
+  - `currentTask` (string or null)
+  - `completedCount` (number)
+  - `failedCount` (number)
+- ✅ Values are accurate and consistent with app state
+- ✅ Counts match array lengths
+
+**In the Terminal Console Logs:**
+- ✅ No errors accessing loading state
+- ✅ No undefined or null errors
+
+**Why:** Confirms `useLoadingState` hook provides complete data access to loading state
+
+---
+
+### Test 11: useAppReady Hook Simplicity
+
+**Purpose:** Verify `useAppReady` provides focused ready state
+
+**Steps:**
+1. Observe "App Ready" and "Initializing" status during app launch
+2. Verify they inverse correctly
+
+**Expected Results:**
+
+**In the App UI:**
+- ✅ When `isAppReady` is false, `isInitializing` is true
+- ✅ When `isAppReady` is true, `isInitializing` is false
+- ✅ Transition happens smoothly
+- ✅ Values are always boolean (never undefined)
+
+**In the Terminal Console Logs:**
+- ✅ No errors or warnings
+
+**Why:** Confirms `useAppReady` provides simple, reliable ready state tracking
+
+---
+
+### Test 12: useSplashControl Hook Functions
+
+**Purpose:** Verify both `useSplashControl` hook functions work correctly
+
+**Steps:**
+1. Tap "Hide Splash" button (tests `hideSplash()`)
+2. Tap "Check Visibility" button (tests `isSplashVisible()`)
+3. Observe event log
+
+**Expected Results:**
+
+**In the App UI:**
+- ✅ Both buttons work without errors
+- ✅ `hideSplash()` completes asynchronously
+- ✅ `isSplashVisible()` returns synchronously
+- ✅ Event log shows both actions
+- ✅ No undefined or null errors
+
+**In the Terminal Console Logs:**
+- ✅ No errors calling splash control functions
+- ✅ Functions work even if bootsplash not installed (graceful degradation)
+
+**Why:** Confirms `useSplashControl` provides reliable splash screen control interface
+
+---
+
+## Success Criteria: App-Wide Loading & Splash Orchestration
+
+- [X] Test 1: App Initialization Status
+- [X] Test 2: Splash Screen Visibility Check
+- [X] Test 3: Manual Splash Control
+- [X] Test 4: Loading Overlay Display
+- [X] Test 5: Transparent Loading Overlay
+- [X] Test 6: Loading State Updates
+- [X] Test 7: Loading State in Light Mode
+- [X] Test 8: Loading State in Dark Mode
+- [X] Test 9: Multiple Overlay Triggers
+- [X] Test 10: useLoadingState Hook Accuracy
+- [X] Test 11: useAppReady Hook Simplicity
+- [X] Test 12: useSplashControl Hook Functions
+
+All 12 tests must pass to be considered complete

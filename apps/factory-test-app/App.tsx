@@ -8,9 +8,10 @@ import {
   StoreInitializer, 
   useIsDarkMode, 
   NavigationContainer,
-  ErrorBoundary
+  ErrorBoundary,
+  LoadingProvider
 } from '@factory/app-shell';
-import { Lifecycle, Stores, Navigation, Errors } from './features/app-shell';
+import { Lifecycle, Stores, Navigation, Errors, Loading } from './features/app-shell';
 import { EventLog } from './components';
 import { ProfileScreen, SettingsScreen, DetailsScreen } from './screens';
 
@@ -38,42 +39,81 @@ export default function App() {
   };
 
   return (
-    <LifecycleProvider 
+    <LoadingProvider
       config={{
-        coldStartThreshold: 300000,
-        onAppStarting: () => {
-          console.log('[Lifecycle] App starting');
-          addLifecycleEvent('Config: onAppStarting fired');
-        },
-        onAppActive: () => {
-          console.log('[Lifecycle] App active');
-          addLifecycleEvent('Config: onAppActive fired');
-        },
-        onAppBackground: () => {
-          console.log('[Lifecycle] App background');
-          addLifecycleEvent('Config: onAppBackground fired');
-        },
-        onAppInactive: () => {
-          console.log('[Lifecycle] App inactive');
-          addLifecycleEvent('Config: onAppInactive fired');
+        splashMinDuration: 1000,
+        tasks: [
+          {
+            id: 'init-stores',
+            name: 'Initialize Stores',
+            critical: true,
+            executor: async () => {
+              await new Promise(resolve => setTimeout(resolve, 500));
+              console.log('[Loading] Stores initialized');
+            },
+          },
+          {
+            id: 'load-config',
+            name: 'Load Configuration',
+            critical: false,
+            executor: async () => {
+              await new Promise(resolve => setTimeout(resolve, 300));
+              console.log('[Loading] Configuration loaded');
+            },
+          },
+          {
+            id: 'fetch-remote-data',
+            name: 'Fetch Remote Data',
+            critical: false,
+            timeout: 100,
+            executor: async () => {
+              await new Promise(resolve => setTimeout(resolve, 500));
+              console.log('[Loading] Remote data fetched');
+            },
+          },
+        ],
+        onReady: () => {
+          console.log('[Loading] App ready!');
         },
       }}
     >
-      <StoreInitializer 
+      <LifecycleProvider 
         config={{
-          theme: {
-            defaultMode: 'auto',
-            followSystem: true,
-          }
+          coldStartThreshold: 300000,
+          onAppStarting: () => {
+            console.log('[Lifecycle] App starting');
+            addLifecycleEvent('Config: onAppStarting fired');
+          },
+          onAppActive: () => {
+            console.log('[Lifecycle] App active');
+            addLifecycleEvent('Config: onAppActive fired');
+          },
+          onAppBackground: () => {
+            console.log('[Lifecycle] App background');
+            addLifecycleEvent('Config: onAppBackground fired');
+          },
+          onAppInactive: () => {
+            console.log('[Lifecycle] App inactive');
+            addLifecycleEvent('Config: onAppInactive fired');
+          },
         }}
       >
-        <AppWithErrorBoundary
-          deepLinkEvents={deepLinkEvents} 
-          lifecycleEvents={lifecycleEvents}
-          handleDeepLink={handleDeepLink} 
-        />
-      </StoreInitializer>
-    </LifecycleProvider>
+        <StoreInitializer 
+          config={{
+            theme: {
+              defaultMode: 'auto',
+              followSystem: true,
+            }
+          }}
+        >
+          <AppWithErrorBoundary
+            deepLinkEvents={deepLinkEvents} 
+            lifecycleEvents={lifecycleEvents}
+            handleDeepLink={handleDeepLink} 
+          />
+        </StoreInitializer>
+      </LifecycleProvider>
+    </LoadingProvider>
   );
 }
 
@@ -300,6 +340,14 @@ function AppContent({ deepLinkEvents, lifecycleEvents }: {
         />
 
         <Lifecycle 
+          onEvent={addEvent}
+          isDarkMode={isDarkMode}
+          cardBackground={cardBackground}
+          textColor={textColor}
+          secondaryText={secondaryText}
+        />
+
+        <Loading 
           onEvent={addEvent}
           isDarkMode={isDarkMode}
           cardBackground={cardBackground}
