@@ -3,7 +3,9 @@
 // React 19 compatibility: https://callstack.github.io/react-native-testing-library/docs/guides/react-19
 
 module.exports = {
-  preset: 'react-native',
+  // Use ts-jest for TypeScript transformation
+  preset: 'ts-jest',
+  testEnvironment: 'node',
   
   // TypeScript transformation
   transform: {
@@ -56,6 +58,8 @@ module.exports = {
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
     '^@sentry/react-native$': '<rootDir>/__mocks__/@sentry/react-native.js',
+    '^react-native$': '<rootDir>/__mocks__/react-native.js',
+    '^@react-navigation/native$': '<rootDir>/__mocks__/@react-navigation/native.js',
   },
   
   // Mock zustand for test isolation

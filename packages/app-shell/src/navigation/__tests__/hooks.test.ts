@@ -225,7 +225,7 @@ describe('useTypedRoute', () => {
       const { result } = renderHook(() => useTypedRoute());
       
       // Screen uses params to decide what to render
-      const isEditMode = (result.current.params as any)?.mode === 'edit';
+      const isEditMode = result.current.params && 'mode' in result.current.params && result.current.params.mode === 'edit';
       expect(isEditMode).toBe(true);
     });
 

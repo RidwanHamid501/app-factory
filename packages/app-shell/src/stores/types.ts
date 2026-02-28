@@ -21,5 +21,5 @@ export interface SettingsConfig {
   currency?: string;
   units?: 'metric' | 'imperial';
   notifications?: boolean;
-  [key: string]: any;
+  [key: string]: string | number | boolean | undefined;
 }

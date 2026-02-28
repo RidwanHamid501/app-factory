@@ -101,7 +101,7 @@ describe('LifecycleStore', () => {
       const firstTimestamp = useLifecycleStore.getState().lastBackgroundTimestamp;
       
       // Wait a bit for timestamp to advance
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise<void>(resolve => setTimeout(() => resolve(), 10));
       
       recordBackgroundTransition();
       const secondTimestamp = useLifecycleStore.getState().lastBackgroundTimestamp;
@@ -119,7 +119,7 @@ describe('LifecycleStore', () => {
       const backgroundTime = useLifecycleStore.getState().lastBackgroundTimestamp;
       
       // Simulate some time passing
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise<void>(resolve => setTimeout(() => resolve(), 10));
       
       recordActiveTransition();
       
@@ -207,7 +207,7 @@ describe('LifecycleStore', () => {
       recordBackgroundTransition();
       const firstTimestamp = useLifecycleStore.getState().lastBackgroundTimestamp;
       
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise<void>(resolve => setTimeout(() => resolve(), 10));
       
       recordBackgroundTransition();
       const secondTimestamp = useLifecycleStore.getState().lastBackgroundTimestamp;

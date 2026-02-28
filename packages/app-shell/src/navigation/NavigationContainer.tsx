@@ -45,9 +45,9 @@ export function NavigationContainer<T extends ParamListBase = ParamListBase>({
   const linking = config?.linking ? {
     prefixes: config.linking.prefixes,
     config: {
-      screens: config.linking.screens as any,
+      screens: config.linking.screens as Partial<Record<string, string>>,
     },
-    getStateFromPath: (path: string, options: any) => {
+    getStateFromPath: (path: string, options: Parameters<typeof getStateFromPath>[1]) => {
       Logger.info('[Deep Link] Received path:', path);
       
       if (onDeepLink && path && config.linking) {
@@ -68,7 +68,7 @@ export function NavigationContainer<T extends ParamListBase = ParamListBase>({
     <RNNavigationContainer
       ref={navigationRef}
       theme={theme}
-      linking={linking as any}
+      linking={linking as typeof linking & { enabled: boolean }}
       fallback={config?.fallback ? <config.fallback /> : undefined}
       onReady={handleReady}
       onStateChange={handleStateChange}

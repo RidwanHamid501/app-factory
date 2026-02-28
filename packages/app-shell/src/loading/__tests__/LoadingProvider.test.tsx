@@ -37,7 +37,7 @@ describe('LoadingProvider', () => {
           critical: true,
           executor: async () => {
             executionOrder.push('task1');
-            await new Promise(resolve => setTimeout(resolve, 10));
+            await new Promise<void>(resolve => setTimeout(() => resolve(), 10));
           },
         },
         {
@@ -71,7 +71,7 @@ describe('LoadingProvider', () => {
           name: 'Task 1',
           critical: false,
           executor: async () => {
-            await new Promise(resolve => setTimeout(resolve, 20));
+            await new Promise<void>(resolve => setTimeout(() => resolve(), 20));
             completed.push('task1');
           },
         },
@@ -80,7 +80,7 @@ describe('LoadingProvider', () => {
           name: 'Task 2',
           critical: false,
           executor: async () => {
-            await new Promise(resolve => setTimeout(resolve, 10));
+            await new Promise<void>(resolve => setTimeout(() => resolve(), 10));
             completed.push('task2');
           },
         },
@@ -203,7 +203,7 @@ describe('LoadingProvider', () => {
           name: 'Slow Task',
           critical: true,
           executor: async () => {
-            await new Promise(resolve => setTimeout(resolve, 200));
+            await new Promise<void>(resolve => setTimeout(() => resolve(), 200));
           },
         },
       ];
@@ -232,7 +232,7 @@ describe('LoadingProvider', () => {
           critical: false,
           timeout: 10,
           executor: async () => {
-            await new Promise(resolve => setTimeout(resolve, 100));
+            await new Promise<void>(resolve => setTimeout(() => resolve(), 100));
           },
         },
       ];
@@ -259,7 +259,7 @@ describe('LoadingProvider', () => {
           name: 'Blocking Task',
           critical: true,
           executor: async () => {
-            await new Promise(resolve => setTimeout(resolve, 50));
+            await new Promise<void>(resolve => setTimeout(() => resolve(), 50));
             taskCompleted = true;
           },
         },
@@ -287,7 +287,7 @@ describe('LoadingProvider', () => {
           name: 'Background Task',
           critical: false,
           executor: async () => {
-            await new Promise(resolve => setTimeout(resolve, 100));
+            await new Promise<void>(resolve => setTimeout(() => resolve(), 100));
           },
         },
       ];

@@ -1,15 +1,21 @@
 import { Logger } from '../utils/logger';
 import type { SplashOptions } from './types';
 
-let bootsplashInstance: any = null;
+type BootsplashModule = {
+  hide: (options: { fade?: boolean; duration?: number }) => Promise<void>;
+  isVisible: () => boolean;
+} | null;
+
+let bootsplashInstance: BootsplashModule = null;
 let splashHidden = false;
 
 // Initialize bootsplash reference - Official docs: https://github.com/zoontek/react-native-bootsplash
 function getBootsplash() {
   if (!bootsplashInstance) {
     try {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
       bootsplashInstance = require('react-native-bootsplash');
-    } catch (error) {
+    } catch {
       Logger.warn('[SplashController] react-native-bootsplash not installed');
       bootsplashInstance = null;
     }

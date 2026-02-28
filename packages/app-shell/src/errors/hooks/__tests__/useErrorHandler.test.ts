@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 import { renderHook } from '@testing-library/react-native';
 import { useErrorHandler } from '../useErrorHandler';
 import { Logger } from '../../../utils/logger';

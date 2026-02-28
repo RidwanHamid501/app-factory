@@ -7,7 +7,7 @@ export function useErrorHandler() {
   const { showBoundary } = useErrorBoundary();
 
   return useCallback(
-    (error: Error, context?: Record<string, any>) => {
+    (error: Error, context?: Record<string, unknown>) => {
       Logger.error('[useErrorHandler] Manually triggered error:', {
         message: error.message,
         context,

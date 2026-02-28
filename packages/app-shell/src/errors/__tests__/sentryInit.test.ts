@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 import { initializeSentry, captureSentryException, isSentryInitialized, __resetSentryForTesting } from '../sentryInit';
 import { Logger } from '../../utils/logger';
 import type { SentryConfig } from '../types';
@@ -12,7 +13,7 @@ jest.mock('../../utils/logger', () => ({
 }));
 
 describe('sentryInit', () => {
-  let mockSentry: any;
+  let mockSentry: { init: jest.Mock; captureException: jest.Mock };
 
   beforeEach(() => {
     jest.clearAllMocks();
