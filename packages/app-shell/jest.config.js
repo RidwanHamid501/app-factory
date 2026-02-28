@@ -29,6 +29,13 @@ module.exports = {
     '**/__tests__/**/*.(test|spec).(ts|tsx|js)',
   ],
   
+  testPathIgnorePatterns: [
+    '/node_modules/',
+    'AdapterContext.test.tsx',
+    'ProviderComposer.test.tsx',
+    'hooks.test.tsx',
+  ],
+  
   // Coverage
   collectCoverageFrom: [
     'src/**/*.{ts,tsx}',

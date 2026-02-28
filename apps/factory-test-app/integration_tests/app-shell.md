@@ -2735,3 +2735,608 @@ This test suite validates the Remote Configuration Bootstrap feature in `@factor
 - [X] Test 12: Error Handling for Missing Keys
 
 All 12 tests must pass to be considered complete
+
+---
+
+# Test Suite: Extension Points for App-Specific Modules (Adapters)
+
+## Overview
+
+This test suite validates the Adapter Extension Points feature in `@factory/app-shell`, which provides a registry-based system for app-specific customizations through adapters. The feature enables apps to register custom screens, providers, middleware, initialization hooks, and configuration.
+
+**Prerequisites:**
+- App must implement an adapter using `AppAdapter` interface
+- Adapter must be registered via `useAdapterRegistry`
+- `Adapter` component visible in app
+- Console logs accessible for validation
+
+---
+
+### Test 1: Adapter Registration
+
+**Purpose:** Verify adapter can be registered successfully with validation
+
+**Steps:**
+1. Launch the app fresh (force close and reopen)
+2. Navigate to "Adapter Integration Test" section
+3. Check "Registration Status" panel
+
+**Expected Results:**
+
+**In the App UI:**
+- ✅ Registered: "✅ Yes"
+- ✅ Adapter Name: Shows your adapter's name (e.g., "factory-test-app")
+- ✅ Adapter Version: Shows version (e.g., "1.0.0")
+- ✅ No error messages displayed
+
+**In the Terminal Console Logs:**
+- ✅ `LOG  [AdapterRegistry] Registering adapter: [name]`
+- ✅ `LOG  [AdapterValidator] Validating adapter: [name]`
+- ✅ No validation errors logged
+- ✅ If warnings exist, they should be descriptive and non-blocking
+
+**Why:** Confirms adapter registration with validation works correctly on app startup
+
+---
+
+### Test 2: Adapter Validation - Valid Adapter
+
+**Purpose:** Verify valid adapters pass validation
+
+**Steps:**
+1. Check that app loads without validation errors
+2. Review console logs for validation results
+
+**Expected Results:**
+
+**In the Terminal Console Logs:**
+- ✅ `LOG  [AdapterValidator] Validation passed for adapter: [name]`
+- ✅ If warnings: `WARN  [AdapterValidator] Warnings for adapter: [name]` with details
+- ✅ No error logs indicating validation failure
+
+**Why:** Confirms adapter validator correctly validates proper adapter structure
+
+---
+
+### Test 3: Screen Definitions Display
+
+**Purpose:** Verify adapter-defined screens are registered and accessible
+
+**Steps:**
+1. Scroll to "Screens" section in Adapter component
+2. Observe screen count and details
+
+**Expected Results:**
+
+**In the App UI:**
+- ✅ Shows correct count: "Screens (N)" where N is number of screens
+- ✅ Each screen displays as: "• [ScreenName] - [Title]"
+- ✅ If no screens: Shows "Screens (0)" with no entries
+- ✅ All registered screens appear in the list
+
+**Why:** Confirms `getScreens()` correctly retrieves adapter-defined screen definitions
+
+---
+
+### Test 4: Provider Definitions Display
+
+**Purpose:** Verify adapter-defined providers are registered with correct order
+
+**Steps:**
+1. Scroll to "Providers" section in Adapter component
+2. Observe provider count and details
+
+**Expected Results:**
+
+**In the App UI:**
+- ✅ Shows correct count: "Providers (N)"
+- ✅ Each provider displays as: "• [ProviderName] (order: [number])"
+- ✅ Providers are listed in registration order
+- ✅ Order values are visible (e.g., 10, 50, 100)
+
+**Why:** Confirms `getProviders()` retrieves providers and displays their ordering
+
+---
+
+### Test 5: Theme Configuration Access
+
+**Purpose:** Verify adapter theme config is accessible
+
+**Steps:**
+1. Scroll to "Theme Config" section
+2. Observe light and dark theme values
+
+**Expected Results:**
+
+**In the App UI:**
+- ✅ Light Theme: Shows partial theme object or "None"
+- ✅ Dark Theme: Shows partial theme object or "None"
+- ✅ If configured, shows color values like `{"primary":"#007AFF"...`
+- ✅ Truncated to 50 chars with visible values
+
+**Why:** Confirms `useAdapterTheme()` hook retrieves theme configuration
+
+---
+
+### Test 6: Settings Configuration Access
+
+**Purpose:** Verify adapter settings config is accessible
+
+**Steps:**
+1. Scroll to "Settings" section
+2. Observe settings key-value pairs
+
+**Expected Results:**
+
+**In the App UI:**
+- ✅ If settings exist: Shows "key: value, key2: value2" format
+- ✅ If no settings: Shows "No settings"
+- ✅ All settings keys are visible
+
+**Why:** Confirms `useAdapterSettings()` hook retrieves settings configuration
+
+---
+
+### Test 7: Strings Configuration Access
+
+**Purpose:** Verify adapter localization strings are accessible
+
+**Steps:**
+1. Scroll to "Strings" section
+2. Observe string key-value pairs
+
+**Expected Results:**
+
+**In the App UI:**
+- ✅ If strings exist: Shows "key: value, key2: value2" format
+- ✅ If no strings: Shows "No strings"
+- ✅ All localization strings are visible
+
+**Why:** Confirms `useAdapterStrings()` hook retrieves string configuration
+
+---
+
+### Test 8: Feature Flags Configuration Access
+
+**Purpose:** Verify adapter feature flags are accessible
+
+**Steps:**
+1. Scroll to "Feature Flags" section
+2. Observe feature flag key-value pairs
+
+**Expected Results:**
+
+**In the App UI:**
+- ✅ If flags exist: Shows "key: value, key2: value2" format
+- ✅ If no flags: Shows "No feature flags"
+- ✅ Boolean values displayed correctly (true/false)
+
+**Why:** Confirms `useAdapterFeatureFlags()` hook retrieves feature flag configuration
+
+---
+
+### Test 9: Linking Prefixes Access
+
+**Purpose:** Verify adapter deep link prefixes are accessible
+
+**Steps:**
+1. Scroll to "Linking Prefixes" section
+2. Observe prefix values
+
+**Expected Results:**
+
+**In the App UI:**
+- ✅ If prefixes exist: Shows comma-separated list (e.g., "myapp://,https://myapp.com")
+- ✅ If no prefixes: Shows "No prefixes"
+- ✅ All configured prefixes visible
+
+**Why:** Confirms `useAdapterLinkingPrefixes()` hook retrieves linking configuration
+
+---
+
+### Test 10: Log All Config Action
+
+**Purpose:** Verify all config sections can be accessed programmatically
+
+**Steps:**
+1. Scroll to "Actions" section
+2. Tap "Log All Config" button
+3. Check Event Log
+
+**Expected Results:**
+
+**In the App UI:**
+- ✅ Event log shows "Config sections accessed"
+- ✅ Shows "Theme keys: light, dark" (or empty if no theme)
+- ✅ Shows "Settings keys: [keys]" (or empty)
+- ✅ Shows "Strings keys: [keys]" (or empty)
+- ✅ No errors or crashes
+
+**Why:** Confirms all config section hooks work together without conflicts
+
+---
+
+### Test 11: Log Full Config Action
+
+**Purpose:** Verify complete config object is accessible
+
+**Steps:**
+1. Tap "Log Full Config" button in Actions section
+2. Check Event Log
+
+**Expected Results:**
+
+**In the App UI:**
+- ✅ Event log shows "Full config object accessed"
+- ✅ Shows truncated config JSON: "Config: {theme:{...},settings:{...}..."
+- ✅ First 100 chars visible
+- ✅ No undefined or null errors
+
+**Why:** Confirms `useAdapterConfig()` hook provides full config access
+
+---
+
+### Test 12: Adapter Context Availability
+
+**Purpose:** Verify adapter data is available throughout component tree
+
+**Steps:**
+1. Confirm AdapterDemo component renders
+2. All sections display data correctly
+3. No "hook called outside provider" errors
+
+**Expected Results:**
+
+**In the App UI:**
+- ✅ All adapter data sections render
+- ✅ No React context errors
+- ✅ All hooks return valid data (not undefined)
+
+**In the Terminal Console Logs:**
+- ✅ No "useAdapterContext called outside AdapterProvider" errors
+- ✅ No undefined hook access errors
+
+**Why:** Confirms `AdapterProvider` correctly provides context to all child components
+
+---
+
+### Test 13: Provider Composition (Manual Verification)
+
+**Purpose:** Verify adapter-defined providers are composed correctly
+
+**Note:** This test requires manually checking if custom providers are applied
+
+**Steps:**
+1. If your adapter defines custom providers, check they're active
+2. Verify provider order matches specified `order` values
+3. Confirm nested provider hierarchy works
+
+**Expected Results:**
+
+**In the App UI:**
+- ✅ Custom providers from adapter are active
+- ✅ Provider order is correct (lower order = outer provider)
+- ✅ No provider mounting errors
+
+**In the Terminal Console Logs:**
+- ✅ `LOG  [ProviderComposer] Mounting provider: [name]` for each provider
+- ✅ Providers logged in correct order (outermost first)
+
+**Why:** Confirms `ProviderComposer` correctly nests adapter providers
+
+---
+
+### Test 14: useAdapter Hook - Full Adapter Access
+
+**Purpose:** Verify `useAdapter()` hook provides complete adapter object
+
+**Steps:**
+1. Observe adapter name and version display in Registration Status
+2. Verify they match your adapter definition
+
+**Expected Results:**
+
+**In the App UI:**
+- ✅ Adapter Name matches your `AppAdapter.name`
+- ✅ Adapter Version matches your `AppAdapter.version`
+- ✅ Values are not undefined or null
+
+**Why:** Confirms `useAdapter()` hook correctly retrieves full adapter object
+
+---
+
+### Test 15: useIsAdapterRegistered Hook
+
+**Purpose:** Verify adapter registration status hook works
+
+**Steps:**
+1. Check "Registered" status in Registration Status panel
+2. Should show "✅ Yes" if adapter is registered
+
+**Expected Results:**
+
+**In the App UI:**
+- ✅ Shows "✅ Yes" when adapter registered
+- ✅ Would show "❌ No" if no adapter (test in separate scenario)
+- ✅ Status reflects actual registration state
+
+**Why:** Confirms `useIsAdapterRegistered()` hook accurately reports registration status
+
+---
+
+### Test 16: Multiple Config Hook Usage
+
+**Purpose:** Verify multiple hooks can be used simultaneously
+
+**Steps:**
+1. Observe that Adapter uses many hooks at once:
+   - useAdapter
+   - useIsAdapterRegistered
+   - useAdapterConfig
+   - useAdapterTheme
+   - useAdapterSettings
+   - useAdapterStrings
+   - useAdapterFeatureFlags
+   - useAdapterLinkingPrefixes
+   - useAdapterRegistry (for screens/providers)
+2. Confirm no performance issues
+
+**Expected Results:**
+
+**In the App UI:**
+- ✅ All sections render simultaneously
+- ✅ No lag or stuttering
+- ✅ All hooks return correct data
+- ✅ UI remains responsive
+
+**Why:** Confirms hooks use Zustand selectors efficiently without causing re-render issues
+
+---
+
+### Test 17: Adapter Theme Integration (Manual Check)
+
+**Purpose:** Verify adapter theme config integrates with theme system (if implemented)
+
+**Note:** This test is for future integration when adapters control theme
+
+**Steps:**
+1. Check if adapter theme values affect app theme
+2. Currently, this is just data access - full integration is future work
+
+**Expected Results:**
+
+**Current Behavior:**
+- ✅ Theme values are readable from adapter config
+- ✅ Theme hooks return correct data
+- ⚠️ Values don't yet affect actual app theme (future integration)
+
+**Why:** Documents that adapter theme is accessible but not yet integrated
+
+---
+
+### Test 18: Adapter Settings Integration (Manual Check)
+
+**Purpose:** Verify adapter settings are accessible for app-specific logic
+
+**Steps:**
+1. Check that settings values can be read
+2. Use settings in app logic (if implemented)
+
+**Expected Results:**
+
+**In the App UI:**
+- ✅ Settings values are accessible
+- ✅ Can be used in conditional logic
+- ✅ Values persist in adapter config
+
+**Why:** Confirms settings are ready for app-specific use cases
+
+---
+
+### Test 19: Adapter Screens Integration (Future Test)
+
+**Purpose:** Verify adapter screens integrate with navigation system
+
+**Note:** This test depends on Navigation feature implementation
+
+**Expected Results (Future):**
+- ✅ Adapter-defined screens appear in navigation routes
+- ✅ Navigation to adapter screens works
+- ✅ Screen options (title, header) are applied
+
+**Current Status:**
+- ⚠️ Screens are registered and accessible
+- ⚠️ Full navigation integration is part of Navigation feature
+
+**Why:** Documents future integration point with Navigation feature
+
+---
+
+### Test 20: Adapter State Persistence
+
+**Purpose:** Verify adapter data persists across app lifecycle
+
+**Steps:**
+1. Check adapter registration status
+2. Background the app (home button)
+3. Wait 5 seconds
+4. Return to app
+5. Check adapter data is still available
+
+**Expected Results:**
+
+**In the App UI:**
+- ✅ Registered status remains "✅ Yes"
+- ✅ All adapter data (screens, providers, config) still accessible
+- ✅ No re-registration required
+- ✅ Adapter Name and Version unchanged
+
+**Why:** Confirms adapter registry persists in memory across lifecycle events
+
+---
+
+### Test 21: Validation Error Handling (Requires Invalid Adapter)
+
+**Purpose:** Verify invalid adapters are rejected with clear errors
+
+**Note:** This test requires temporarily modifying adapter to be invalid
+
+**Setup:**
+1. Temporarily remove required field (e.g., `name` or `version`)
+2. Restart app
+3. Observe validation behavior
+
+**Expected Results:**
+
+**In the Terminal Console Logs:**
+- ✅ `ERROR  [AdapterValidator] Validation failed for adapter`
+- ✅ Clear error messages describing what's wrong:
+  - "Adapter must have a name"
+  - "Adapter must have a version"
+  - Or similar descriptive errors
+- ✅ `isValid: false` in validation result
+
+**In the App UI:**
+- ✅ Registered: "❌ No" (adapter rejected)
+- ✅ App doesn't crash (graceful degradation)
+
+**Why:** Confirms strict validation prevents invalid adapters from being registered
+
+**Cleanup:** Restore valid adapter after test
+
+---
+
+### Test 22: Adapter Registry Reset (Development Test)
+
+**Purpose:** Verify adapter registry can be reset programmatically
+
+**Note:** This is a development utility, not for production use
+
+**Steps:**
+1. Open React Native Debugger or console
+2. Call `useAdapterRegistry.getState().reset()`
+3. Check adapter registration status
+
+**Expected Results:**
+
+**In the App UI:**
+- ✅ After reset: Registered changes to "❌ No"
+- ✅ All adapter data cleared
+- ✅ Sections show empty states
+
+**In the Terminal Console Logs:**
+- ✅ `LOG  [AdapterRegistry] Registry reset`
+
+**Why:** Confirms reset functionality works for testing scenarios
+
+---
+
+### Test 23: Hook Performance Under Rapid Access
+
+**Purpose:** Verify hooks remain performant with frequent access
+
+**Steps:**
+1. Rapidly tap "Log All Config" button 10+ times
+2. Tap "Log Full Config" button 10+ times
+3. Observe app responsiveness
+
+**Expected Results:**
+
+**In the App UI:**
+- ✅ Event log updates for each tap
+- ✅ No lag or freezing
+- ✅ UI remains responsive
+- ✅ All data access completes quickly
+
+**In the Terminal Console Logs:**
+- ✅ No performance warnings
+- ✅ No "setState during render" warnings
+
+**Why:** Confirms hooks and registry are optimized for performance
+
+---
+
+### Test 24: Adapter Data Immutability
+
+**Purpose:** Verify adapter data cannot be mutated after registration
+
+**Steps:**
+1. Register adapter
+2. Attempt to access and modify adapter data via hooks
+3. Verify original data unchanged
+
+**Expected Results:**
+
+**Expected Behavior:**
+- ✅ Hooks return data from store
+- ✅ Modifying returned data doesn't affect registry
+- ✅ Re-reading data returns original values
+
+**Why:** Confirms adapter data integrity is maintained
+
+---
+
+### Test 25: Integration with Other App-Shell Features
+
+**Purpose:** Verify adapters work alongside other app-shell features
+
+**Steps:**
+1. With adapter registered, test all other features:
+   - Change theme (Stores)
+   - Navigate between screens (Navigation)
+   - Trigger errors (Error Boundaries)
+   - Check lifecycle events (Lifecycle)
+2. Verify adapter data remains accessible
+
+**Expected Results:**
+
+**In the App UI:**
+- ✅ Adapter data accessible while using all features
+- ✅ No conflicts between features
+- ✅ All features work normally with adapter registered
+- ✅ AdapterDemo continues to function correctly
+
+**Why:** Confirms adapters integrate seamlessly with the rest of app-shell
+
+---
+
+## Success Criteria: Extension Points for App-Specific Modules (Adapters)
+
+All 25 tests should pass to consider the Adapter Extension Points feature complete:
+
+### Core Registration & Validation (3 tests)
+- [X] Test 1: Adapter Registration
+- [ ] Test 2: Adapter Validation - Valid Adapter
+- [X] Test 21: Validation Error Handling
+
+### Data Access Hooks (9 tests)
+- [X] Test 3: Screen Definitions Display
+- [X] Test 4: Provider Definitions Display
+- [X] Test 5: Theme Configuration Access
+- [X] Test 6: Settings Configuration Access
+- [X] Test 7: Strings Configuration Access
+- [X] Test 8: Feature Flags Configuration Access
+- [X] Test 9: Linking Prefixes Access
+- [X] Test 14: useAdapter Hook - Full Adapter Access
+- [X] Test 15: useIsAdapterRegistered Hook
+
+### Actions & Interactions (2 tests)
+- [X] Test 10: Log All Config Action
+- [X] Test 11: Log Full Config Action
+
+### Context & Provider (2 tests)
+- [X] Test 12: Adapter Context Availability
+- [X] Test 13: Provider Composition (Manual Verification)
+
+### Integration Tests (4 tests)
+- [X] Test 16: Multiple Config Hook Usage
+- [X] Test 20: Adapter State Persistence
+- [X] Test 25: Integration with Other App-Shell Features
+- [X] Test 23: Hook Performance Under Rapid Access
+
+### Development & Edge Cases (5 tests)
+- [X] Test 17: Adapter Theme Integration (Future)
+- [X] Test 18: Adapter Settings Integration (Manual Check)
+- [X] Test 19: Adapter Screens Integration (Future)
+- [X] Test 22: Adapter Registry Reset (Development Test)
+- [X] Test 24: Adapter Data Immutability
