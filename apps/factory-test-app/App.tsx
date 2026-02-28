@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View, ScrollView } from 'react-native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -10,11 +10,14 @@ import {
   NavigationContainer,
   ErrorBoundary,
   LoadingProvider,
-  RemoteConfigProvider
+  RemoteConfigProvider,
+  useAdapterRegistry,
+  AdapterProvider,
 } from '@factory/app-shell';
-import { Lifecycle, Stores, Navigation, Errors, Loading, RemoteConfig } from './features/app-shell';
+import { Lifecycle, Stores, Navigation, Errors, Loading, RemoteConfig, Adapter } from './features/app-shell';
 import { EventLog } from './components';
 import { ProfileScreen, SettingsScreen, DetailsScreen } from './screens';
+import { factoryTestAdapter } from './adapter/factoryTestAdapter';
 
 export type RootStackParamList = {
   Home: undefined;
@@ -40,8 +43,10 @@ export default function App() {
   };
 
   return (
-    <RemoteConfigProvider
-      config={{
+    <AdapterProvider>
+      <AdapterRegistration />
+      <RemoteConfigProvider
+        config={{
         defaults: {
           feature_dark_mode: 'false',
           feature_premium: 'false',
@@ -138,7 +143,27 @@ export default function App() {
       </LifecycleProvider>
     </LoadingProvider>
     </RemoteConfigProvider>
+    </AdapterProvider>
   );
+}
+
+function AdapterRegistration() {
+  const register = useAdapterRegistry((state: { register: (adapter: unknown) => { isValid: boolean; errors?: string[]; warnings?: string[] } }) => state.register);
+
+  useEffect(() => {
+    console.log('[App] Registering adapter:', factoryTestAdapter.name);
+    const result = register(factoryTestAdapter);
+    
+    if (!result.isValid) {
+      console.error('[App] Adapter validation failed:', result.errors);
+    } else if (result.warnings && result.warnings.length > 0) {
+      console.warn('[App] Adapter validation warnings:', result.warnings);
+    } else {
+      console.log('[App] Adapter registered successfully');
+    }
+  }, [register]);
+
+  return null;
 }
 
 function AppWithErrorBoundary({ 
@@ -346,6 +371,8 @@ function AppContent({ deepLinkEvents, lifecycleEvents }: {
           textColor={textColor}
           secondaryText={secondaryText}
         />
+
+        <Adapter />
 
         <Errors
           onEvent={addEvent}

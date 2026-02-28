@@ -4,3 +4,4 @@ export { Navigation } from './Navigation';
 export { Errors } from './Errors';
 export { Loading } from './Loading';
 export { RemoteConfig } from './RemoteConfig';
+export { Adapter } from './Adapter';

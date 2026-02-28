@@ -22,6 +22,19 @@ config.resolver = {
     path.resolve(projectRoot, 'node_modules'),
     path.resolve(monorepoRoot, 'node_modules'),
   ],
+  // Custom resolver for file: protocol packages to use source files directly
+  resolveRequest: (context, moduleName, platform) => {
+    // For @factory/app-shell, resolve to source files directly
+    if (moduleName === '@factory/app-shell') {
+      return {
+        filePath: path.resolve(monorepoRoot, 'packages/app-shell/src/index.ts'),
+        type: 'sourceFile',
+      };
+    }
+    
+    // Use default resolver for everything else
+    return context.resolveRequest(context, moduleName, platform);
+  },
 };
 
 // Add duplicate detection plugin
