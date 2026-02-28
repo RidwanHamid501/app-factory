@@ -1,3 +1,8 @@
+// Suppress React Native Firebase modular deprecation warnings
+// The modular API internally uses deprecated methods with the correct suppression flag
+// Official docs: https://rnfirebase.io/migrating-to-v22
+globalThis.RNFB_SILENCE_MODULAR_DEPRECATION_WARNINGS = true;
+
 import { registerRootComponent } from 'expo';
 
 import App from './App';

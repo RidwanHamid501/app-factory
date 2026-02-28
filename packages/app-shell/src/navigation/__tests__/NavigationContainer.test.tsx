@@ -14,7 +14,7 @@ jest.mock('../navigationRef', () => ({
 
 // Mock linking utilities
 jest.mock('../linking', () => ({
-  createLinkingConfigInternal: jest.fn((config: any) => ({
+  createLinkingConfigInternal: jest.fn((config: { prefixes: string[]; screens: Record<string, string> }) => ({
     prefixes: config.prefixes,
     config: { screens: config.screens },
   })),
@@ -22,7 +22,7 @@ jest.mock('../linking', () => ({
 
 // Mock React Navigation
 jest.mock('@react-navigation/native', () => ({
-  NavigationContainer: ({ children, onReady, ref }: any) => {
+  NavigationContainer: ({ children, onReady, ref }: { children: React.ReactNode; onReady?: () => void; ref?: React.RefObject<unknown> }) => {
     // Simulate ref assignment
     React.useEffect(() => {
       if (ref && typeof ref === 'object') {

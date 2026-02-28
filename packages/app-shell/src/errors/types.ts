@@ -26,7 +26,7 @@ export interface ErrorBoundaryConfig {
 // Props passed to fallback components - Official docs: https://github.com/bvaughn/react-error-boundary#fallbackcomponent-prop
 export interface ErrorFallbackProps {
   error: Error;
-  resetErrorBoundary: (...args: any[]) => void;
+  resetErrorBoundary: (...args: unknown[]) => void;
   isDevelopment: boolean;
   isDarkMode?: boolean;
 }

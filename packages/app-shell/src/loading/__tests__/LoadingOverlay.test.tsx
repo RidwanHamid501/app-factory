@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 // LoadingOverlay tests - Component logic validation
 describe('LoadingOverlay', () => {
   describe('Success Cases', () => {

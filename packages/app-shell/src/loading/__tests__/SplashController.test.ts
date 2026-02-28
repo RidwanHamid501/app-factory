@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 // Mock modules at the top level
 jest.mock('../../utils/logger', () => ({
   Logger: {
@@ -9,7 +10,7 @@ jest.mock('../../utils/logger', () => ({
 }));
 
 // Mock react-native-bootsplash
-let mockBootsplash: any = {
+let mockBootsplash: { hide: jest.Mock; isVisible: jest.Mock } = {
   hide: jest.fn().mockResolvedValue(undefined),
   isVisible: jest.fn().mockReturnValue(true),
 };

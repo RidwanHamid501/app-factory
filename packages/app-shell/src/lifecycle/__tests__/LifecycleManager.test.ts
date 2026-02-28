@@ -5,6 +5,12 @@ import { AppState, AppStateStatus } from 'react-native';
 import { lifecycleManager } from '../LifecycleManager';
 import { useLifecycleStore } from '../LifecycleStore';
 import { MAX_BACKGROUND_DURATION_MS } from '../constants';
+import type { LifecycleEvent, LifecycleCallback } from '../types';
+
+type LifecycleManagerPrivate = {
+  isInitialized: boolean;
+  eventSubscribers: Map<LifecycleEvent, Set<LifecycleCallback>>;
+};
 
 // Mock React Native AppState
 jest.mock('react-native', () => ({
@@ -23,10 +29,8 @@ describe('LifecycleManager', () => {
     // Store reset handled automatically by __mocks__/zustand.ts
     
     // Reset manager - accessing private properties for testing
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (lifecycleManager as any).isInitialized = false;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (lifecycleManager as any).eventSubscribers.clear();
+    (lifecycleManager as unknown as LifecycleManagerPrivate).isInitialized = false;
+    (lifecycleManager as unknown as LifecycleManagerPrivate).eventSubscribers.clear();
     
     // Setup mocks
     mockRemove = jest.fn();
@@ -36,8 +40,7 @@ describe('LifecycleManager', () => {
     });
     
     (AppState.addEventListener as jest.Mock) = mockAddEventListener;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (AppState.currentState as any) = 'active';
+    (AppState as { currentState: AppStateStatus | null }).currentState = 'active';
   });
 
   afterEach(() => {
@@ -69,8 +72,7 @@ describe('LifecycleManager', () => {
 
     // Success test: handles null currentState
     it('should handle null AppState.currentState at launch', () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (AppState.currentState as any) = null;
+      (AppState as { currentState: AppStateStatus | null }).currentState = null;
       
       lifecycleManager.initialize();
       
@@ -273,8 +275,7 @@ describe('LifecycleManager', () => {
       
       lifecycleManager.destroy();
       
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const subscribers = (lifecycleManager as any).eventSubscribers;
+      const subscribers = (lifecycleManager as unknown as LifecycleManagerPrivate).eventSubscribers;
       expect(subscribers.size).toBe(0);
     });
 

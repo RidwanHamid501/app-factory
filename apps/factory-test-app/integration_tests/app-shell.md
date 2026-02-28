@@ -2429,3 +2429,309 @@ All 20 tests must pass to be considered complete:
 - [X] Test 12: useSplashControl Hook Functions
 
 All 12 tests must pass to be considered complete
+
+---
+
+# Test Suite: Remote Configuration Bootstrap
+
+## Overview
+
+This test suite validates the Remote Configuration Bootstrap feature in `@factory/app-shell`, which provides remote config fetching, caching, feature flags, and real-time updates.
+
+**Prerequisites:**
+- App must be running with `RemoteConfigProvider` configured
+- "Remote Config & Feature Flags" section visible in app
+- Console logs accessible for validation
+
+---
+
+### Test 1: Remote Config Initialization
+
+**Purpose:** Verify remote config initializes on app startup
+
+**Steps:**
+1. Launch the app fresh (force close and reopen)
+2. Immediately scroll to "Remote Config & Feature Flags" section
+3. Check "Current Status" panel
+
+**Expected Results:**
+
+**In the App UI:**
+- ✅ Initialized: "Yes"
+- ✅ Source: "default" or "cache" (not "remote" yet)
+- ✅ Last Fetch Status: Displays a status
+
+**In the Terminal Console Logs:**
+- ✅ `LOG  [RemoteConfigStore] Set initialized: true`
+- ✅ `LOG  [RemoteConfigStore] Config updated: ...`
+
+**Why:** Confirms remote config provider initializes and loads cached/default values instantly
+
+---
+
+### Test 2: Config Source Tracking
+
+**Purpose:** Verify config source accurately reflects where values came from
+
+**Steps:**
+1. Check "Current Status" panel after app loads
+2. Wait 2-3 seconds for background fetch
+3. Check if source changes
+
+**Expected Results:**
+
+**In the App UI:**
+- ✅ Initial Source: "cache" or "default"
+- ✅ Source updates to "remote" if fetch succeeds (or stays "cache"/"default" if Firebase not configured)
+- ✅ Last Fetch Status: Shows "success", "failure", or "no-fetch-yet"
+
+**In the Terminal Console Logs:**
+- ✅ `LOG  [RemoteConfigManager] ...` (initialization logs)
+- ✅ If Firebase configured: `LOG  [RemoteConfig] Fetch successful from: ...`
+- ✅ If Firebase not configured: `LOG  [RemoteConfigManager] Firebase not available...`
+
+**Why:** Confirms source tracking accurately reflects where config values originated
+
+---
+
+### Test 3: Feature Flags Display
+
+**Purpose:** Verify feature flags are accessible and display correctly
+
+**Steps:**
+1. Scroll to "Feature Flags" section
+2. Observe flag states for:
+   - Dark Mode
+   - Premium Features
+   - Experiment
+
+**Expected Results:**
+
+**In the App UI:**
+- ✅ Each flag shows "Enabled" or "Disabled"
+- ✅ Default state is "Disabled" for all flags (based on defaults in App.tsx)
+- ✅ If variant exists, shows "Variant: [variant_name]"
+- ✅ If metadata exists, shows "Metadata: {...}"
+
+**Why:** Confirms `useRemoteFeatureFlag` hook correctly retrieves and parses feature flags
+
+---
+
+### Test 4: Config Value Type Conversion
+
+**Purpose:** Verify config values return correct types (boolean, string, number)
+
+**Steps:**
+1. Scroll to "Config Values" section
+2. Observe all displayed values:
+   - API Timeout (number)
+   - API URL (string)
+   - Enable Logging (boolean)
+   - Max Retries (number)
+
+**Expected Results:**
+
+**In the App UI:**
+- ✅ API Timeout: Shows "30000ms" (number formatted)
+- ✅ API URL: Shows "https://api.example.com" (string)
+- ✅ Enable Logging: Shows "True" or "False" (boolean)
+- ✅ Max Retries: Shows "3" (number)
+
+**Why:** Confirms `useConfigBoolean`, `useConfigString`, `useConfigNumber` correctly convert types
+
+---
+
+### Test 5: Log Current State Action
+
+**Purpose:** Verify current state can be logged and accessed
+
+**Steps:**
+1. Scroll to "Test Actions" section
+2. Tap "Log Current State" button
+3. Check Event Log
+
+**Expected Results:**
+
+**In the App UI:**
+- ✅ Event log shows new entries:
+  - "RemoteConfig: Logged current state"
+  - "Source: [source], Initialized: true"
+- ✅ No errors or crashes
+
+**Why:** Confirms `useRemoteConfig` hook provides complete state access
+
+---
+
+### Test 6: Show All Config Keys Action
+
+**Purpose:** Verify all config keys can be enumerated
+
+**Steps:**
+1. Tap "Show All Config Keys" button
+2. Check Event Log
+
+**Expected Results:**
+
+**In the App UI:**
+- ✅ Event log shows "RemoteConfig: All config keys"
+- ✅ Lists all config keys with their values:
+  - feature_dark_mode: false
+  - feature_premium: false
+  - feature_experiment: false
+  - api_timeout: 30000
+  - api_url: https://api.example.com
+  - enable_logging: false
+  - max_retries: 3
+
+**Why:** Confirms config snapshot contains all expected keys and values
+
+---
+
+### Test 7: Log Feature Flags Action
+
+**Purpose:** Verify feature flag states can be accessed programmatically
+
+**Steps:**
+1. Tap "Log Feature Flags" button
+2. Check Event Log
+
+**Expected Results:**
+
+**In the App UI:**
+- ✅ Event log shows "RemoteConfig: Feature flag states logged"
+- ✅ Lists each flag with enabled state:
+  - Dark Mode: false
+  - Premium: false
+  - Experiment: false
+
+**Why:** Confirms feature flags are correctly evaluated and accessible
+
+---
+
+### Test 8: Graceful Degradation Without Firebase
+
+**Purpose:** Verify app works when Firebase Remote Config is not configured
+
+**Steps:**
+1. Check "Current Status" section
+2. Observe behavior when Firebase not installed
+
+**Expected Results:**
+
+**In the App UI:**
+- ✅ Initialized: "Yes" (doesn't block)
+- ✅ Source: "default" or "cache"
+- ✅ Last Fetch Status: "no-fetch-yet" or "failure"
+- ✅ All default values are displayed
+- ✅ No crashes or errors
+
+**In the Terminal Console Logs:**
+- ✅ `LOG  [RemoteConfigManager] Firebase not available, using cached`
+- ✅ OR `LOG  [RemoteConfigManager] Using fallback defaults`
+- ✅ No error crashes
+
+**Why:** Confirms remote config gracefully falls back to defaults when Firebase unavailable
+
+---
+
+### Test 9: State Updates Trigger Re-renders
+
+**Purpose:** Verify UI updates when remote config state changes
+
+**Steps:**
+1. Watch "Current Status" panel
+2. Observe "Fetching" status
+3. Wait for background fetch to complete
+4. Check if UI updates
+
+**Expected Results:**
+
+**In the App UI:**
+- ✅ "Fetching" transitions from "No" → "Yes" → "No"
+- ✅ "Source" may update from "cache" → "remote"
+- ✅ "Last Fetch Time" updates with current time
+- ✅ UI re-renders automatically without manual refresh
+
+**Why:** Confirms React hooks properly subscribe to store updates and trigger re-renders
+
+---
+
+### Test 10: Config Values Use Defaults
+
+**Purpose:** Verify default values are used when keys don't exist
+
+**Steps:**
+1. Check all displayed config values
+2. Verify they match defaults from `App.tsx` config
+
+**Expected Results:**
+
+**In the App UI:**
+- ✅ All values match defaults specified in `RemoteConfigProvider` config
+- ✅ No "undefined" or "null" displayed
+- ✅ Type conversions work with default values
+
+**Why:** Confirms default fallback mechanism works correctly
+
+---
+
+### Test 11: Cache Persistence (requires app restart)
+
+**Purpose:** Verify cached config persists across app restarts
+
+**Steps:**
+1. Let app run for 30 seconds to ensure config is cached
+2. Force close the app completely
+3. Reopen the app
+4. Immediately check "Source" in Current Status
+
+**Expected Results:**
+
+**In the App UI:**
+- ✅ Source starts as "cache" (not "default")
+- ✅ Last Fetch Time shows current time
+- ✅ Config values are immediately available
+
+**In the Terminal Console Logs:**
+- ✅ `LOG  [RemoteConfigManager] Initialized with cache values`
+
+**Why:** Confirms Firebase's native caching persists config across app sessions. Firebase marks previously fetched values as having a "remote" source, which our code interprets as "cache" during initialization to indicate these are persisted values from a previous fetch, not defaults.
+
+---
+
+### Test 12: Error Handling for Missing Keys
+
+**Purpose:** Verify graceful handling when config keys don't exist
+
+**Steps:**
+1. Check that non-existent keys don't cause crashes
+2. Verify default values are used
+
+**Expected Results:**
+
+**In the App UI:**
+- ✅ All hooks provide sensible defaults
+- ✅ No crashes when accessing non-existent keys
+- ✅ `useRemoteFeatureFlag` returns `{ enabled: false }` for missing flags
+- ✅ Type-specific hooks return their default values
+
+**Why:** Confirms robust error handling for missing configuration keys
+
+---
+
+## Success Criteria: Remote Configuration Bootstrap
+
+- [X] Test 1: Remote Config Initialization
+- [X] Test 2: Config Source Tracking
+- [X] Test 3: Feature Flags Display
+- [X] Test 4: Config Value Type Conversion
+- [X] Test 5: Log Current State Action
+- [X] Test 6: Show All Config Keys Action
+- [X] Test 7: Log Feature Flags Action
+- [X] Test 8: Graceful Degradation Without Firebase
+- [X] Test 9: State Updates Trigger Re-renders
+- [X] Test 10: Config Values Use Defaults
+- [X] Test 11: Cache Persistence (requires app restart)
+- [X] Test 12: Error Handling for Missing Keys
+
+All 12 tests must pass to be considered complete

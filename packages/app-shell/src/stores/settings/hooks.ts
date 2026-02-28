@@ -5,8 +5,7 @@ import { Settings } from './types';
 export function useSettings(): Settings {
   return useSettingsStore(
     useShallow((state) => {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { updateSettings, resetSettings, ...settings } = state;
+      const { updateSettings: _updateSettings, resetSettings: _resetSettings, ...settings } = state;
       return settings as Settings;
     })
   );

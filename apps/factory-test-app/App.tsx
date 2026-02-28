@@ -9,9 +9,10 @@ import {
   useIsDarkMode, 
   NavigationContainer,
   ErrorBoundary,
-  LoadingProvider
+  LoadingProvider,
+  RemoteConfigProvider
 } from '@factory/app-shell';
-import { Lifecycle, Stores, Navigation, Errors, Loading } from './features/app-shell';
+import { Lifecycle, Stores, Navigation, Errors, Loading, RemoteConfig } from './features/app-shell';
 import { EventLog } from './components';
 import { ProfileScreen, SettingsScreen, DetailsScreen } from './screens';
 
@@ -39,44 +40,66 @@ export default function App() {
   };
 
   return (
-    <LoadingProvider
+    <RemoteConfigProvider
       config={{
-        splashMinDuration: 1000,
-        tasks: [
-          {
-            id: 'init-stores',
-            name: 'Initialize Stores',
-            critical: true,
-            executor: async () => {
-              await new Promise(resolve => setTimeout(resolve, 500));
-              console.log('[Loading] Stores initialized');
-            },
-          },
-          {
-            id: 'load-config',
-            name: 'Load Configuration',
-            critical: false,
-            executor: async () => {
-              await new Promise(resolve => setTimeout(resolve, 300));
-              console.log('[Loading] Configuration loaded');
-            },
-          },
-          {
-            id: 'fetch-remote-data',
-            name: 'Fetch Remote Data',
-            critical: false,
-            timeout: 100,
-            executor: async () => {
-              await new Promise(resolve => setTimeout(resolve, 500));
-              console.log('[Loading] Remote data fetched');
-            },
-          },
-        ],
-        onReady: () => {
-          console.log('[Loading] App ready!');
+        defaults: {
+          feature_dark_mode: 'false',
+          feature_premium: 'false',
+          feature_experiment: 'false',
+          api_timeout: '30000',
+          api_url: 'https://api.example.com',
+          enable_logging: 'false',
+          max_retries: '3',
+        },
+        minimumFetchIntervalMillis: 3600000, // 1 hour
+        fetchTimeoutMillis: 60000, // 60 seconds
+        enableRealtime: false, // Set to true to test real-time updates
+        onFetchSuccess: (config) => {
+          console.log('[RemoteConfig] Fetch successful from:', config.source);
+        },
+        onFetchError: (error) => {
+          console.log('[RemoteConfig] Fetch failed:', error.message);
         },
       }}
     >
+      <LoadingProvider
+        config={{
+          splashMinDuration: 1000,
+          tasks: [
+            {
+              id: 'init-stores',
+              name: 'Initialize Stores',
+              critical: true,
+              executor: async () => {
+                await new Promise(resolve => setTimeout(resolve, 500));
+                console.log('[Loading] Stores initialized');
+              },
+            },
+            {
+              id: 'load-config',
+              name: 'Load Configuration',
+              critical: false,
+              executor: async () => {
+                await new Promise(resolve => setTimeout(resolve, 300));
+                console.log('[Loading] Configuration loaded');
+              },
+            },
+            {
+              id: 'fetch-remote-data',
+              name: 'Fetch Remote Data',
+              critical: false,
+              timeout: 100,
+              executor: async () => {
+                await new Promise(resolve => setTimeout(resolve, 500));
+                console.log('[Loading] Remote data fetched');
+              },
+            },
+          ],
+          onReady: () => {
+            console.log('[Loading] App ready!');
+          },
+        }}
+      >
       <LifecycleProvider 
         config={{
           coldStartThreshold: 300000,
@@ -114,6 +137,7 @@ export default function App() {
         </StoreInitializer>
       </LifecycleProvider>
     </LoadingProvider>
+    </RemoteConfigProvider>
   );
 }
 
@@ -354,6 +378,8 @@ function AppContent({ deepLinkEvents, lifecycleEvents }: {
           textColor={textColor}
           secondaryText={secondaryText}
         />
+
+        <RemoteConfig />
 
         <EventLog 
           events={events}

@@ -56,7 +56,7 @@ export function LoadingProvider({
       const remaining = Math.max(0, splashMinDuration - elapsed);
 
       if (remaining > 0) {
-        await new Promise((resolve) => setTimeout(resolve, remaining));
+        await new Promise<void>((resolve) => setTimeout(() => resolve(), remaining));
       }
 
       markAppReady();

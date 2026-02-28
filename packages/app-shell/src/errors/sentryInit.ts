@@ -1,8 +1,21 @@
 import { Logger } from '../utils/logger';
 import type { SentryConfig } from './types';
 
+type SentryModule = {
+  init: (config: {
+    dsn: string;
+    environment?: string;
+    release?: string;
+    dist?: string;
+    debug?: boolean;
+    tracesSampleRate?: number;
+    maxBreadcrumbs?: number;
+  }) => void;
+  captureException: (error: Error, context?: { contexts?: { react?: { componentStack?: string } } }) => void;
+} | null;
+
 let sentryInitialized = false;
-let sentryInstance: any = null;
+let sentryInstance: SentryModule = null;
 
 // Initialize Sentry with user config - Official docs: https://docs.sentry.io/platforms/react-native/
 export function initializeSentry(config: SentryConfig): void {
@@ -17,20 +30,24 @@ export function initializeSentry(config: SentryConfig): void {
   }
 
   try {
-    sentryInstance = require('@sentry/react-native');
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const sentry = require('@sentry/react-native') as SentryModule;
+    sentryInstance = sentry;
     
-    sentryInstance.init({
-      dsn: config.dsn,
-      environment: config.environment,
-      release: config.release,
-      dist: config.dist,
-      debug: config.debug ?? __DEV__,
-      tracesSampleRate: config.sampleRate ?? 1.0,
-      maxBreadcrumbs: config.maxBreadcrumbs ?? 100,
-    });
+    if (sentryInstance) {
+      sentryInstance.init({
+        dsn: config.dsn,
+        environment: config.environment,
+        release: config.release,
+        dist: config.dist,
+        debug: config.debug ?? __DEV__,
+        tracesSampleRate: config.sampleRate ?? 1.0,
+        maxBreadcrumbs: config.maxBreadcrumbs ?? 100,
+      });
 
-    sentryInitialized = true;
-    Logger.info('[Sentry] Initialized successfully');
+      sentryInitialized = true;
+      Logger.info('[Sentry] Initialized successfully');
+    }
   } catch (error) {
     Logger.error('[Sentry] Failed to initialize:', error);
     sentryInstance = null;
@@ -51,7 +68,7 @@ export function captureSentryException(
     sentryInstance.captureException(error, {
       contexts: {
         react: {
-          componentStack: errorInfo.componentStack,
+          componentStack: errorInfo.componentStack ?? '',
         },
       },
     });
