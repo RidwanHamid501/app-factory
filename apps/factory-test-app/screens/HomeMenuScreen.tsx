@@ -37,6 +37,13 @@ export function HomeMenuScreen() {
         { name: 'Account Deletion', screen: 'AccountDeletion' as const, description: 'Account deletion with re-auth' },
       ],
     },
+    {
+      title: '@factory/paywall Tests',
+      items: [
+        { name: 'Paywall Overview', screen: 'Paywall' as const, description: 'Basic paywall functionality' },
+        { name: 'Integration Tests', screen: 'PaywallTest' as const, description: 'Full integration test suite' },
+      ],
+    },
   ];
 
   return (
@@ -80,7 +87,8 @@ export function HomeMenuScreen() {
           </Text>
           <Text style={[styles.infoText, { color: secondaryText }]}>
             • App Shell: integration_tests/app-shell.md{'\n'}
-            • Auth Lite: integration_tests/auth-lite.md
+            • Auth Lite: integration_tests/auth-lite.md{'\n'}
+            • Paywall: integration_tests/paywall.md
           </Text>
         </View>
       </ScrollView>

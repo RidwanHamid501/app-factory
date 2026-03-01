@@ -13,6 +13,7 @@
   "dependencies": {
     "@factory/app-shell": "file:../../packages/app-shell",
     "@factory/auth-lite": "file:../../packages/auth-lite",
+    "@factory/paywall": "file:../../packages/paywall",
     "@react-native-async-storage/async-storage": "^3.0.1",
     "@react-native-firebase/app": "^23.8.6",
     "@react-native-firebase/remote-config": "^23.8.6",
@@ -28,8 +29,11 @@
     "expo-system-ui": "~6.0.9",
     "expo-web-browser": "~15.0.10",
     "react": "19.1.0",
+    "react-error-boundary": "^6.1.1",
     "react-native": "0.81.5",
     "react-native-bootsplash": "^7.1.0",
+    "react-native-purchases": "^9.10.5",
+    "react-native-purchases-ui": "^9.10.5",
     "react-native-safe-area-context": "^5.6.2",
     "react-native-screens": "~4.16.0",
     "zustand": "^5.0.11"
