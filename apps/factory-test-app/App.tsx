@@ -13,7 +13,9 @@ import {
   RemoteConfigProvider,
   useAdapterRegistry,
   AdapterProvider,
+  useAdapterConfig,
 } from '@factory/app-shell';
+import { useRevenueCatInitialization } from '@factory/paywall';
 import { Lifecycle, Stores, Navigation, Errors, Loading, RemoteConfig, Adapter } from './features/app-shell';
 import { Anonymous, SocialSignIn, TokenManagement, AccountMigration, AccountManagement, AccountDeletion } from './features/auth';
 import { EventLog } from './components';
@@ -26,7 +28,11 @@ import {
   ErrorTestScreen, 
   RemoteConfigTestScreen,
   AnonymousTestScreen,
+  ProfileScreen,
+  SettingsScreen,
+  DetailsScreen,
 } from './screens';
+import { PaywallScreen, PaywallTestScreen } from './screens/paywall';
 import { factoryTestAdapter } from './adapter/factoryTestAdapter';
 
 export type RootStackParamList = {
@@ -52,6 +58,9 @@ export type TestStackParamList = {
   AccountMigration: undefined;
   AccountManagement: undefined;
   AccountDeletion: undefined;
+  // Paywall Tests
+  Paywall: undefined;
+  PaywallTest: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -74,6 +83,7 @@ export default function App() {
   return (
     <AdapterProvider>
       <AdapterRegistration />
+      <RevenueCatInitializer />
       <RemoteConfigProvider
         config={{
         defaults: {
@@ -167,7 +177,8 @@ export default function App() {
 }
 
 function AdapterRegistration() {
-  const register = useAdapterRegistry((state) => state.register);
+  const adapterRegistry = useAdapterRegistry();
+  const register = adapterRegistry.register;
 
   useEffect(() => {
     console.log('[App] Registering adapter:', factoryTestAdapter.name);
@@ -181,6 +192,22 @@ function AdapterRegistration() {
       console.log('[App] Adapter registered successfully');
     }
   }, [register]);
+
+  return null;
+}
+
+function RevenueCatInitializer() {
+  const config = useAdapterConfig();
+  const apiKey = (config as any)?.paywall?.apiKey || 'test_qsBndNsiLiFDMLTOlDqFpGwPjdn';
+  const { isInitialized, error } = useRevenueCatInitialization(apiKey);
+
+  useEffect(() => {
+    if (isInitialized) {
+      console.log('[RevenueCat] SDK initialized successfully');
+    } else if (error) {
+      console.error('[RevenueCat] Initialization error:', error);
+    }
+  }, [isInitialized, error]);
 
   return null;
 }
@@ -328,6 +355,9 @@ function TestNavigator() {
       <TestStack.Screen name="AccountMigration" component={AccountMigration} options={{ title: 'Account Migration' }} />
       <TestStack.Screen name="AccountManagement" component={AccountManagement} options={{ title: 'Account Management' }} />
       <TestStack.Screen name="AccountDeletion" component={AccountDeletion} options={{ title: 'Account Deletion' }} />
+      {/* Paywall Tests */}
+      <TestStack.Screen name="Paywall" component={PaywallScreen} options={{ title: 'Paywall' }} />
+      <TestStack.Screen name="PaywallTest" component={PaywallTestScreen} options={{ title: 'Paywall Integration Test' }} />
     </TestStack.Navigator>
   );
 }

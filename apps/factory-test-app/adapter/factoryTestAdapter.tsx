@@ -107,6 +107,10 @@ export const factoryTestAdapter: AppAdapter = {
       apiUrl: 'https://api.factory-test.app',
       debugMode: true,
     },
+    paywall: {
+      apiKey: 'test_qsBndNsiLiFDMLTOlDqFpGwPjdn',
+      entitlementId: 'pro',
+    },
     strings: {
       welcome: 'Welcome to Factory Test App',
       error_generic: 'Something went wrong',
