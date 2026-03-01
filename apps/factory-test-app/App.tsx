@@ -15,8 +15,18 @@ import {
   AdapterProvider,
 } from '@factory/app-shell';
 import { Lifecycle, Stores, Navigation, Errors, Loading, RemoteConfig, Adapter } from './features/app-shell';
+import { Anonymous, SocialSignIn, TokenManagement, AccountMigration, AccountManagement, AccountDeletion } from './features/auth';
 import { EventLog } from './components';
-import { ProfileScreen, SettingsScreen, DetailsScreen } from './screens';
+import { HomeMenuScreen } from './screens/HomeMenuScreen';
+import { 
+  LifecycleScreen, 
+  NavigationTestScreen, 
+  StoresScreen, 
+  LoadingTestScreen, 
+  ErrorTestScreen, 
+  RemoteConfigTestScreen,
+  AnonymousTestScreen,
+} from './screens';
 import { factoryTestAdapter } from './adapter/factoryTestAdapter';
 
 export type RootStackParamList = {
@@ -26,7 +36,26 @@ export type RootStackParamList = {
   Details: { id: string };
 };
 
+export type TestStackParamList = {
+  HomeMenu: undefined;
+  // App Shell Tests
+  Lifecycle: undefined;
+  Navigation: undefined;
+  Stores: undefined;
+  LoadingTest: undefined;
+  ErrorTest: undefined;
+  RemoteConfigTest: undefined;
+  // Auth Lite Tests
+  AnonymousTest: undefined;
+  SocialSignIn: undefined;
+  TokenManagement: undefined;
+  AccountMigration: undefined;
+  AccountManagement: undefined;
+  AccountDeletion: undefined;
+};
+
 const Stack = createNativeStackNavigator<RootStackParamList>();
+const TestStack = createNativeStackNavigator<TestStackParamList>();
 
 export default function App() {
   const [deepLinkEvents, setDeepLinkEvents] = useState<string[]>([]);
@@ -89,16 +118,6 @@ export default function App() {
                 console.log('[Loading] Configuration loaded');
               },
             },
-            {
-              id: 'fetch-remote-data',
-              name: 'Fetch Remote Data',
-              critical: false,
-              timeout: 100,
-              executor: async () => {
-                await new Promise(resolve => setTimeout(resolve, 500));
-                console.log('[Loading] Remote data fetched');
-              },
-            },
           ],
           onReady: () => {
             console.log('[Loading] App ready!');
@@ -148,7 +167,7 @@ export default function App() {
 }
 
 function AdapterRegistration() {
-  const register = useAdapterRegistry((state: { register: (adapter: unknown) => { isValid: boolean; errors?: string[]; warnings?: string[] } }) => state.register);
+  const register = useAdapterRegistry((state) => state.register);
 
   useEffect(() => {
     console.log('[App] Registering adapter:', factoryTestAdapter.name);
@@ -241,21 +260,75 @@ function AppNavigator({
       <Stack.Navigator
         initialRouteName="Home"
         screenOptions={{
-          headerShown: false,
+          headerShown: true,
           animation: 'simple_push',
           contentStyle: {
             backgroundColor: isDarkMode ? '#1a1a1a' : '#f5f5f5',
           },
+          headerStyle: {
+            backgroundColor: isDarkMode ? '#2d2d2d' : '#fff',
+          },
+          headerTintColor: isDarkMode ? '#fff' : '#000',
+          headerTitleStyle: {
+            fontWeight: '600',
+          },
         }}
       >
-        <Stack.Screen name="Home">
-          {() => <HomeScreen deepLinkEvents={deepLinkEvents} lifecycleEvents={lifecycleEvents} />}
+        <Stack.Screen 
+          name="Home" 
+          options={{ title: 'Factory Test App', headerShown: false }}
+        >
+          {() => <TestNavigator />}
         </Stack.Screen>
-        <Stack.Screen name="Profile" component={ProfileScreenWrapper} />
-        <Stack.Screen name="Settings" component={SettingsScreenWrapper} />
-        <Stack.Screen name="Details" component={DetailsScreenWrapper} />
+        <Stack.Screen name="Profile" component={ProfileScreenWrapper} options={{ title: 'Profile' }} />
+        <Stack.Screen name="Settings" component={SettingsScreenWrapper} options={{ title: 'Settings' }} />
+        <Stack.Screen name="Details" component={DetailsScreenWrapper} options={{ title: 'Details' }} />
       </Stack.Navigator>
     </NavigationContainer>
+  );
+}
+
+function TestNavigator() {
+  const isDarkMode = useIsDarkMode();
+
+  return (
+    <TestStack.Navigator
+      initialRouteName="HomeMenu"
+      screenOptions={{
+        headerShown: true,
+        animation: 'simple_push',
+        contentStyle: {
+          backgroundColor: isDarkMode ? '#1a1a1a' : '#f5f5f5',
+        },
+        headerStyle: {
+          backgroundColor: isDarkMode ? '#2d2d2d' : '#fff',
+        },
+        headerTintColor: isDarkMode ? '#fff' : '#000',
+        headerTitleStyle: {
+          fontWeight: '600',
+        },
+      }}
+    >
+      <TestStack.Screen 
+        name="HomeMenu" 
+        component={HomeMenuScreen} 
+        options={{ headerShown: false }}
+      />
+      {/* App Shell Tests */}
+      <TestStack.Screen name="Lifecycle" component={LifecycleScreen} options={{ title: 'Lifecycle & Events' }} />
+      <TestStack.Screen name="Navigation" component={NavigationTestScreen} options={{ title: 'Navigation' }} />
+      <TestStack.Screen name="Stores" component={StoresScreen} options={{ title: 'Theme & Stores' }} />
+      <TestStack.Screen name="LoadingTest" component={LoadingTestScreen} options={{ title: 'Loading' }} />
+      <TestStack.Screen name="ErrorTest" component={ErrorTestScreen} options={{ title: 'Error Handling' }} />
+      <TestStack.Screen name="RemoteConfigTest" component={RemoteConfigTestScreen} options={{ title: 'Remote Config' }} />
+      {/* Auth Lite Tests */}
+      <TestStack.Screen name="AnonymousTest" component={AnonymousTestScreen} options={{ title: 'Anonymous Mode' }} />
+      <TestStack.Screen name="SocialSignIn" component={SocialSignIn} options={{ title: 'Social Sign-In' }} />
+      <TestStack.Screen name="TokenManagement" component={TokenManagement} options={{ title: 'Token Management' }} />
+      <TestStack.Screen name="AccountMigration" component={AccountMigration} options={{ title: 'Account Migration' }} />
+      <TestStack.Screen name="AccountManagement" component={AccountManagement} options={{ title: 'Account Management' }} />
+      <TestStack.Screen name="AccountDeletion" component={AccountDeletion} options={{ title: 'Account Deletion' }} />
+    </TestStack.Navigator>
   );
 }
 
@@ -263,7 +336,7 @@ function HomeScreen({ deepLinkEvents, lifecycleEvents }: {
   deepLinkEvents: string[];
   lifecycleEvents: string[];
 }) {
-  return <AppContent deepLinkEvents={deepLinkEvents} lifecycleEvents={lifecycleEvents} />;
+  return <HomeMenuScreen />;
 }
 
 function ProfileScreenWrapper() {
@@ -373,6 +446,38 @@ function AppContent({ deepLinkEvents, lifecycleEvents }: {
         />
 
         <Adapter />
+
+        <Anonymous />
+
+        <SocialSignIn />
+
+        <View style={[styles.section, { backgroundColor: cardBackground }]}>
+          <Text style={[styles.sectionTitle, { color: textColor }]}>
+            Token Management
+          </Text>
+          <TokenManagement />
+        </View>
+
+        <View style={[styles.section, { backgroundColor: cardBackground }]}>
+          <Text style={[styles.sectionTitle, { color: textColor }]}>
+            Account Migration
+          </Text>
+          <AccountMigration />
+        </View>
+
+        <View style={[styles.section, { backgroundColor: cardBackground }]}>
+          <Text style={[styles.sectionTitle, { color: textColor }]}>
+            Account Management
+          </Text>
+          <AccountManagement />
+        </View>
+
+        <View style={[styles.section, { backgroundColor: cardBackground }]}>
+          <Text style={[styles.sectionTitle, { color: textColor }]}>
+            Account Deletion
+          </Text>
+          <AccountDeletion />
+        </View>
 
         <Errors
           onEvent={addEvent}
